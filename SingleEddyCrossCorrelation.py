@@ -10,111 +10,105 @@ import pyqtgraph.opengl as gl
 from pyqtgraph.Qt import QtCore
 import time
 from pyqtgraph.Qt import QtWidgets
+from pyqtgraph.dockarea.Dock import Dock
+from pyqtgraph.dockarea.DockArea import DockArea
 
 from scipy import signal
 
 ## Create a GL View widget to display data
-app = pg.mkQApp("GLSurfacePlot Example")
-w = gl.GLViewWidget()
-#w.show()
-w.setWindowTitle('pyqtgraph example: GLSurfacePlot')
-w.setCameraPosition(distance=100)
+app = pg.mkQApp("Single eddy cross correlation")
+w = QtWidgets.QMainWindow()
+area = DockArea()
+w.setCentralWidget(area)
+w.setWindowTitle('Single eddy cross correlation')
+w.resize(1000, 600)
 
-
+#Change plot background and foreground colours.
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
+#Create the different "docks" (widgets the different plots live in).
+d1 = Dock("Dock1", size=(300, 500))
+d2 = Dock("Dock 2", size=(400, 300))
+d3 = Dock("Dock 2", size=(400, 300))
+d4 = Dock("Dock 2", size=(400, 300))
+area.addDock(d1, 'left')
+area.addDock(d2, 'right')
+area.addDock(d3, 'bottom', d2)
+area.addDock(d4, 'bottom', d3)
+
+#Initialize the random pipe cross section (grid) and the single eddy at the beginning.
 rows = 300
 cols = 1000
 x = np.linspace(0, rows, rows+1)
 y = np.linspace(0, cols, cols+1)
-z = 2*np.random.random((rows+1,cols+1)) -1
+z = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
+#z = np.random.random((rows+1, cols+1)) #Between 0 and 1
+radius = 50
 for x_val in x:
     for y_val in y:
-        if ((x_val-150)**2+(y_val-50)**2 <= 2500):
-            z[int(x_val)][int(y_val)] = (50-((x_val-150)**2/50 + (y_val-50)**2/50))/50
+        if ((x_val-(rows/2))**2+(y_val-radius)**2 <= radius**2):
+            z[int(x_val)][int(y_val)] = (radius-((x_val-(rows/2))**2/radius + (y_val-radius)**2/radius))/radius
 
-p2 = gl.GLSurfacePlotItem(x=x, y=y, z=z, shader='normalColor', smooth=True)
-p2.translate(0,0,0)
-w.addItem(p2)
+#Plot the grid with pyqtgraph.
+d1.hideTitleBar()
+wGrid = pg.ImageView()
+p1 = wGrid.setImage(z)
+d1.addWidget(wGrid)
 
-index = 0
-NewLineSum = np.array([])
-NewLineSum2 = np.array([])
+#Plot the first line integral.
+d2.hideTitleBar()
+wPlotLine1 = pg.PlotWidget(title="Line Integral Location 1")
+wPlotLine1.setXRange(0, 250, padding=0)
+LineIntegralPlot = wPlotLine1.plot(pen='k')
+d2.addWidget(wPlotLine1)
 
-win = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples")
-win.resize(1000,600)
-win.setWindowTitle('pyqtgraph example: Plotting')
+#Plot the second line integral.
+d3.hideTitleBar()
+wPlotLine2 = pg.PlotWidget(title="Line Integral Location 2")
+wPlotLine2.setXRange(0, 250, padding=0)
+LineIntegralPlot2 = wPlotLine2.plot(pen='k')
+d3.addWidget(wPlotLine2)
 
-pL1 = win.addPlot(title="Line Integral Location 1")
-pL1.setXRange(0, 250, padding=0)
-LineIntegralPlot = pL1.plot(pen='k')
-
-win.nextRow()
-
-pL2 = win.addPlot(title="Line Integral Location 2")
-pL2.setXRange(0, 250, padding=0)
-
-LineIntegralPlot2 = pL2.plot(pen='k')
-
-win2 = QtWidgets.QMainWindow()
-win2.resize(800,800)
-imv = pg.ImageView()
-win2.setCentralWidget(imv)
-win2.show()
-win2.setWindowTitle('pyqtgraph example: ImageView')
-cmap = pg.colormap.get('CET-L1')
-imv.setColorMap(cmap)
-
-
-#win3 = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples2")
-#win3.resize(1000,600)
-#win3.setWindowTitle('pyqtgraph example: Plotting')
-
-#pD1 = win3.addPlot(title="Line Integral Distance")
-#pD1.setXRange(0, rows, padding=0)
-#LineIntegralPositionPlot = pD1.plot(pen='y')
-
-#win3.nextRow()
-
-#pD2 = win3.addPlot(title="Line Integral Distance")
-#pD2.setXRange(0, rows, padding=0)
-#LineIntegralPositionPlot2 = pD2.plot(pen='y')
-
-
-win4 = pg.GraphicsLayoutWidget(show=True, title="Basic plotting examples2")
-win4.resize(1000,600)
-win4.setWindowTitle('pyqtgraph example: Plotting') 
-crosscorrelation = win4.addPlot(title="Cross Correlation")
+#Plot the cross correlation (which gets filled in when the simulation is done.)
+d4.hideTitleBar()
+crosscorrelation = pg.PlotWidget(title="Cross Correlation")
 crosscorrelation.setXRange(0, 60, padding=0)
 crosscorrelation.setYRange(-120, 120, padding=0)
 crosscorrelationPlot = crosscorrelation.plot(pen='k')
+d4.addWidget(crosscorrelation)
 
-first = 10
-second = 11
+#Show the plotting window.
+w.show()
+
+#** LOCATION OF SENSORS IN PX ALONG PIPE CROSS SECTION**
+location1 = 200
+location2 = 400
+
+#Controls how long the simulation runs (in frames)
+counter = 0
+
+#Plotting initializations
+CorrelationList = []
 SumPlot_y = []
 SumPlot_y2 = []
 end = False
+NewLineSum = np.array([])
+NewLineSum2 = np.array([])
 
-CorrelationList = []
-
-counter = -100
 def update():
-    global counter, NewLineSum, NewLineSum2, p2, z, index, tau, end
+    global counter, NewLineSum, NewLineSum2, z, tau, end
     stime = time.time()
-    index -= 1
     counter += 1
     ColumnValue = 0
     ColumnValue2 = 0
-    ColumnValuePlot = 0
-    ColumnValuePlot2 = 0
     LineSum = NewLineSum
     LineSum2 = NewLineSum2
     if end == True:
         return
     if counter < 0:
         return
-    if counter < 250:
+    if counter < 100:
         for i in range(len(z)):
             #shift = 10
             if i < (rows/2):
@@ -124,50 +118,33 @@ def update():
             if shift == 0:
                 shift = 1
             for j in range(shift):
-                z[i] = np.append([2*np.random.random()-1], z[i][:-1])#np.append([0], z[i][:-1])
+                z[i] = np.append([2*np.random.random()-1], z[i][:-1]) #Between -1 and 1
+                #z[i] = np.append([np.random.random()], z[i][:-1]) #Between 0 and 1
 
-            ColumnValue = LineIntegralSum(200, z[i], ColumnValue)
-            ColumnValue2 = LineIntegralSum(501, z[i], ColumnValue2)    
+            ColumnValue = LineIntegralSum(location1, z[i], ColumnValue)
+            ColumnValue2 = LineIntegralSum(location2, z[i], ColumnValue2)    
         ColumnArray = np.array([ColumnValue])
         NewLineSum = np.append(LineSum, ColumnArray)
         ColumnArray2 = np.array([ColumnValue2])
         NewLineSum2 = np.append(LineSum2, ColumnArray2)
-
-        #if counter == first:
-        #    for j in range(len(z)):
-        #        ColumnValuePlot = 0
-        #        ColumnValuePlot = LineIntegralSum(j, z[j], ColumnValuePlot)
-        #        SumPlot_y.append(ColumnValuePlot)
-        #    LineIntegralPositionPlot.setData(SumPlot_y)
-        #if counter == second:
-        ##    for j in range(len(z)):
-         #       ColumnValuePlot2 = 0
-         #       ColumnValuePlot2 = LineIntegralSum(j, z[j], ColumnValuePlot2)
-         #       SumPlot_y2.append(ColumnValuePlot2)
-         #   LineIntegralPositionPlot2.setData(SumPlot_y2)
         
-        #p2.setData(z=z)
-        imv.setImage(z)
-        
+        wGrid.setImage(z)
 
         LineIntegralPlot.setData(NewLineSum)
         LineIntegralPlot2.setData(NewLineSum2)
         print('{:.0f} FPS'.format(1 / (time.time() - stime)))
 
-    else:
-        #corr = signal.correlate(NewLineSum, NewLineSum2)/len(NewLineSum)
-        
+    else:       
         for tau in range(len(NewLineSum)-1):
             CorrelationSum = 0
             for t in range(len(NewLineSum)-tau):
                 CorrelationSum += NewLineSum[t]*NewLineSum2[t+tau]
             CorrelationSum = CorrelationSum/(len(NewLineSum)-tau)
-        #Correlation = np.correlate(NewLineSum, NewLineSum2)
-        #print(Correlation)
             CorrelationList.append(CorrelationSum)
         crosscorrelationPlot.setData(CorrelationList)   
         end = True
 
+#Sum the grid cross section as the signal data point.
 def LineIntegralSum(columnNumber, row, ColumnValue):
     ColumnValue += row[columnNumber]
     return ColumnValue
