@@ -1,7 +1,3 @@
-"""
-This example demonstrates the use of GLSurfacePlotItem.
-"""
-
 import numpy as np
 import math
 import random
@@ -12,7 +8,6 @@ import time
 from pyqtgraph.Qt import QtWidgets
 from pyqtgraph.dockarea.Dock import Dock
 from pyqtgraph.dockarea.DockArea import DockArea
-
 from scipy import signal
 
 ## Create a GL View widget to display data
@@ -58,23 +53,29 @@ d1.addWidget(wGrid)
 
 #Plot the first line integral.
 d2.hideTitleBar()
-wPlotLine1 = pg.PlotWidget(title="Line Integral Location 1")
-wPlotLine1.setXRange(0, 250, padding=0)
+wPlotLine1 = pg.PlotWidget(title="Ultrasonic Signal, Location 1")
+wPlotLine1.setXRange(0, 50, padding=0)
+wPlotLine1.setLabel('bottom', 'Time')
+wPlotLine1.setLabel('left', 'Strength')
 LineIntegralPlot = wPlotLine1.plot(pen='k')
 d2.addWidget(wPlotLine1)
 
 #Plot the second line integral.
 d3.hideTitleBar()
-wPlotLine2 = pg.PlotWidget(title="Line Integral Location 2")
-wPlotLine2.setXRange(0, 250, padding=0)
+wPlotLine2 = pg.PlotWidget(title="Ultrasonic Signal, Location 2")
+wPlotLine2.setXRange(0, 50, padding=0)
+wPlotLine2.setLabel('bottom', 'Time')
+wPlotLine2.setLabel('left', 'Strength')
 LineIntegralPlot2 = wPlotLine2.plot(pen='k')
 d3.addWidget(wPlotLine2)
 
 #Plot the cross correlation (which gets filled in when the simulation is done.)
 d4.hideTitleBar()
 crosscorrelation = pg.PlotWidget(title="Cross Correlation")
-crosscorrelation.setXRange(0, 60, padding=0)
-crosscorrelation.setYRange(-120, 120, padding=0)
+crosscorrelation.setXRange(0, 30, padding=0)
+crosscorrelation.setYRange(-100, 200, padding=0)
+crosscorrelation.setLabel('bottom', 'Time')
+crosscorrelation.setLabel('left', 'Strength')
 crosscorrelationPlot = crosscorrelation.plot(pen='k')
 d4.addWidget(crosscorrelation)
 
@@ -112,9 +113,9 @@ def update():
         for i in range(len(z)):
             #shift = 10
             if i < (rows/2):
-                shift = math.floor(((i + 1)/5))
+                shift = math.floor(((i + 1)/10))
             else:
-                shift = math.floor(((-i+rows)/5))
+                shift = math.floor(((-i+rows)/10))
             if shift == 0:
                 shift = 1
             for j in range(shift):
