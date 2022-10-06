@@ -83,6 +83,8 @@ def DataConstruction(location1, location2):
     w.show()
 
     #** LOCATION OF SENSORS IN PX ALONG PIPE CROSS SECTION**
+    #location1 = 200
+    #location2 = 300
 
     #Controls how long the simulation runs (in frames)
     counter = 0
@@ -158,11 +160,11 @@ def DataConstruction(location1, location2):
     timer.timeout.connect(update)
     timer.start(10)
 
-    if __name__ == '__main__':
-        pg.exec()
-    
-    
+    #if __name__ == '__main__':
+    pg.exec()
+  
     return crosscorrelationData
 
-#result = DataConstruction(200, 300)
-#print(result)
+#Module supports
+if __name__ == "__main__":
+   DataConstruction(location1, location2)
