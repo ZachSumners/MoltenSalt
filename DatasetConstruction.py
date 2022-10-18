@@ -33,8 +33,8 @@ def DataConstruction(location1, location2):
     area.addDock(d4, 'bottom', d3)
 
     #Initialize the random pipe cross section (grid) and the single eddy at the beginning.
-    rows = 300
-    cols = 1000
+    rows = 500
+    cols = 2000
     x = np.linspace(0, rows, rows+1)
     y = np.linspace(0, cols, cols+1)
     z = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1

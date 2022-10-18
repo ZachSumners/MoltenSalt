@@ -1,31 +1,43 @@
 import DatasetConstruction
 import pandas as pd
-import time
+import numpy as np
 
 data = []
 location1s = []
 location2s = []
 offsets = []
 
-for i in range(5):
-    location1 = 50*i + 150
+loops = 5
+for i in range(loops):
+    location1 = 200#50*i + 150
     location2 = 50*i + 250
     results = DatasetConstruction.DataConstruction(location1, location2)
-    
-    
-    #print(results)
+
     data.append(results[0][0])
     location1s.append(results[0][1])
     location2s.append(results[0][2])
     offsets.append(results[0][3])
 
-df = pd.DataFrame(
-    {
-        "Data": data,
-        "Location 1": location1s,
-        "Location 2": location2s,
-        "Offset": offsets
-    }
-)
+dfdata = pd.DataFrame()
 
-print(df["Offset"])
+#############################################
+# TIME ELAPSED | SIM1   | SIM2 | ... | SIM N
+# -1           | LOC1   |      |     |
+# -1           | LOC2   |      |     |
+# -1           | OFFSET |      |     |
+# 0            | DATA   |      |     |
+# ...          | DATA   |      |     |
+# END          | DATA   |      |     |
+#############################################
+
+timelist = np.arange(0, len(data[0]), 1)
+timelist = np.insert(timelist, 0, np.array([-1, -1, -1]))
+dfdata['Time Elapsed'] = timelist
+for i in range(loops):
+    name = "Cross Correlation Sim " + str(i+1)
+    data[i].insert(0, location1s[i])
+    data[i].insert(1, location2s[i])
+    data[i].insert(2, offsets[i])
+    dfdata[name] = data[i]
+
+dfdata.to_csv("MoltenSaltDataframe.csv")
