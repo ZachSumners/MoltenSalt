@@ -10,7 +10,7 @@ offsets = []
 loops = 5
 for i in range(loops):
     location1 = 200#50*i + 150
-    location2 = 50*i + 250
+    location2 = 50*i + 1050
     results = DatasetConstruction.DataConstruction(location1, location2)
 
     data.append(results[0][0])
@@ -33,11 +33,10 @@ dfdata = pd.DataFrame()
 timelist = np.arange(0, len(data[0]), 1)
 timelist = np.insert(timelist, 0, np.array([-1, -1, -1]))
 dfdata['Time Elapsed'] = timelist
+
 for i in range(loops):
     name = "Cross Correlation Sim " + str(i+1)
-    data[i].insert(0, location1s[i])
-    data[i].insert(1, location2s[i])
-    data[i].insert(2, offsets[i])
+    data[i] = np.insert(data[i], 0, np.array([location1s[i], location2s[i], offsets[i]]))
     dfdata[name] = data[i]
 
 dfdata.to_csv("MoltenSaltDataframe.csv")

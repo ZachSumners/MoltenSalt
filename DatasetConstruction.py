@@ -138,15 +138,17 @@ def DataConstruction(location1, location2):
             LineIntegralPlot2.setData(NewLineSum2)
             print('{:.0f} FPS'.format(1 / (time.time() - stime)))
 
-        else:       
-            for tau in range(len(NewLineSum)-1):
-                CorrelationSum = 0
-                for t in range(len(NewLineSum)-tau):
-                    CorrelationSum += NewLineSum[t]*NewLineSum2[t+tau]
-                CorrelationSum = CorrelationSum/(len(NewLineSum)-tau)
-                CorrelationList.append(CorrelationSum)
+        else:     
+            CorrelationList = np.correlate(NewLineSum, NewLineSum2, mode='full')  
+            # for tau in range(len(NewLineSum)-1):
+            #     CorrelationSum = 0
+            #     for t in range(len(NewLineSum)-tau):
+            #         CorrelationSum += NewLineSum[t]*NewLineSum2[t+tau]
+            #     CorrelationSum = CorrelationSum/(len(NewLineSum)-tau)
+            #     CorrelationList.append(CorrelationSum)
             crosscorrelationPlot.setData(CorrelationList)
             crosscorrelationData.append([CorrelationList, location1, location2, abs(location2 - location1)])
+            
             end = True
             w.close()
             
