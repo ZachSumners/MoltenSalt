@@ -43,7 +43,7 @@ def DataConstruction(location1, location2):
     for x_val in x:
         for y_val in y:
             if ((x_val-(rows/2))**2+(y_val-radius)**2 <= radius**2):
-                z[int(x_val)][int(y_val)] = 1#(radius-((x_val-(rows/2))**2/radius + (y_val-radius)**2/radius))/radius
+                z[int(x_val)][int(y_val)] = (radius-((x_val-(rows/2))**2/radius + (y_val-radius)**2/radius))/radius
 
     #Plot the grid with pyqtgraph.
     d1.hideTitleBar()
@@ -114,13 +114,14 @@ def DataConstruction(location1, location2):
             return
         if counter < 100:
             for i in range(len(z)):
-                #shift = 10
-                if i < (rows/2):
-                    shift = math.floor(((i + 1)/5))
-                else:
-                    shift = math.floor(((-i+rows)/5))
-                if shift == 0:
-                    shift = 1
+                shift = 20
+                
+                #if i < (rows/2):
+                #    shift = math.floor(((i + 1)/5))
+                #else:
+                #    shift = math.floor(((-i+rows)/5))
+                #if shift == 0:
+                #    shift = 1
                 for j in range(shift):
                     z[i] = np.append([2*np.random.random()-1], z[i][:-1]) #Between -1 and 1
                     #z[i] = np.append([np.random.random()], z[i][:-1]) #Between 0 and 1
@@ -139,7 +140,8 @@ def DataConstruction(location1, location2):
             print('{:.0f} FPS'.format(1 / (time.time() - stime)))
 
         else:     
-            CorrelationList = np.correlate(NewLineSum, NewLineSum2, mode='full')  
+            CorrelationList = np.correlate(NewLineSum2, NewLineSum, mode='full')
+            lag = abs(location2 - location1)/20 #CorrelationList.argmax() - (len(NewLineSum2) - 1)
             # for tau in range(len(NewLineSum)-1):
             #     CorrelationSum = 0
             #     for t in range(len(NewLineSum)-tau):
@@ -147,7 +149,7 @@ def DataConstruction(location1, location2):
             #     CorrelationSum = CorrelationSum/(len(NewLineSum)-tau)
             #     CorrelationList.append(CorrelationSum)
             crosscorrelationPlot.setData(CorrelationList)
-            crosscorrelationData.append([CorrelationList, location1, location2, abs(location2 - location1)])
+            crosscorrelationData.append([CorrelationList, location1, location2, abs(location2 - location1), lag])
             
             end = True
             w.close()
