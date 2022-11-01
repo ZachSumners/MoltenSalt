@@ -8,7 +8,7 @@ from pyqtgraph.Qt import QtWidgets
 from pyqtgraph.dockarea.Dock import Dock
 from pyqtgraph.dockarea.DockArea import DockArea
 
-def DataConstruction(location1, location2):
+def DataConstruction(location1, location2, radius):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, p1, counter, z, app
     ## Create a GL View widget to display data
     app = pg.mkQApp("Single eddy cross correlation")
@@ -39,7 +39,7 @@ def DataConstruction(location1, location2):
     y = np.linspace(0, cols, cols+1)
     z = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
     #z = np.random.random((rows+1, cols+1)) #Between 0 and 1
-    radius = 50
+    #radius = 50
     for x_val in x:
         for y_val in y:
             if ((x_val-(rows/2))**2+(y_val-radius)**2 <= radius**2):
@@ -101,7 +101,7 @@ def DataConstruction(location1, location2):
     crosscorrelationData = []
 
     def update():
-        global counter, NewLineSum, NewLineSum2, z, tau, end
+        global counter, NewLineSum, NewLineSum2, z, end
         stime = time.time()
         counter += 1
         ColumnValue = 0
@@ -114,14 +114,15 @@ def DataConstruction(location1, location2):
             return
         if counter < 100:
             for i in range(len(z)):
-                shift = 20
+                #shift = 20
                 
                 #if i < (rows/2):
                 #    shift = math.floor(((i + 1)/5))
                 #else:
                 #    shift = math.floor(((-i+rows)/5))
-                #if shift == 0:
-                #    shift = 1
+                shift = math.floor(-(i-250)**2/5000 + 12.5)
+                if shift == 0:
+                    shift = 1
                 for j in range(shift):
                     z[i] = np.append([2*np.random.random()-1], z[i][:-1]) #Between -1 and 1
                     #z[i] = np.append([np.random.random()], z[i][:-1]) #Between 0 and 1
@@ -141,13 +142,9 @@ def DataConstruction(location1, location2):
 
         else:     
             CorrelationList = np.correlate(NewLineSum2, NewLineSum, mode='full')
-            lag = abs(location2 - location1)/20 #CorrelationList.argmax() - (len(NewLineSum2) - 1)
-            # for tau in range(len(NewLineSum)-1):
-            #     CorrelationSum = 0
-            #     for t in range(len(NewLineSum)-tau):
-            #         CorrelationSum += NewLineSum[t]*NewLineSum2[t+tau]
-            #     CorrelationSum = CorrelationSum/(len(NewLineSum)-tau)
-            #     CorrelationList.append(CorrelationSum)
+            middle = rows/2
+            lag = abs(location2 - location1)/math.floor(-(middle-250)**2/5000 + 12.5)
+
             crosscorrelationPlot.setData(CorrelationList)
             crosscorrelationData.append([CorrelationList, location1, location2, abs(location2 - location1), lag])
             
