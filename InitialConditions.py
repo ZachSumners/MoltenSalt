@@ -1,14 +1,11 @@
 #MANUAL DEFINITIONS
 #Set to 0 if you do NOT want to manually set them.
-location1 = 0
-location2 = 0
-radius = 0
 
-def InitialLocations(location1, location2):
+def InitialLocations(location1, location2, multiple1, multiple2, starting1, starting2, i):
     if location1 == 0:
-        location1 = 300
+        location1 = multiple1 * i + starting1
     if location2 == 0:
-        location2 = 400
+        location2 = multiple2 * i + starting2
     return [location1, location2]
 
 def InitialRadius(radius):

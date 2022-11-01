@@ -11,9 +11,9 @@ lags = []
 
 loops = 5
 for i in range(loops):
-    location1 = InitialConditions.InitialLocations()[0]
-    location2 = InitialConditions.InitialLocations()[1]
-    radius = InitialConditions.InitialRadius()
+    location1 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[0]
+    location2 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[1]
+    radius = InitialConditions.InitialRadius(100)
     results = DatasetConstruction.DataConstruction(location1, location2, radius)
 
     data.append(results[0][0])
