@@ -7,8 +7,9 @@ import time
 from pyqtgraph.Qt import QtWidgets
 from pyqtgraph.dockarea.Dock import Dock
 from pyqtgraph.dockarea.DockArea import DockArea
+import InitialConditions
 
-def DataConstruction(location1, location2, radius):
+def DataConstruction(location1, location2, radius, starting_x, starting_y, length_time):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, p1, counter, z, app
     ## Create a GL View widget to display data
     app = pg.mkQApp("Single eddy cross correlation")
@@ -40,10 +41,15 @@ def DataConstruction(location1, location2, radius):
     z = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
     #z = np.random.random((rows+1, cols+1)) #Between 0 and 1
     #radius = 50
+
+    if starting_x < radius or starting_x > rows-radius or starting_y < radius or starting_y > rows-radius:
+        print("Invalid eddy coordinates.")
+        return [[0]]
+
     for x_val in x:
         for y_val in y:
             if ((x_val-(rows/2))**2+(y_val-radius)**2 <= radius**2):
-                z[int(x_val)][int(y_val)] = (radius-((x_val-(rows/2))**2/radius + (y_val-radius)**2/radius))/radius
+                z[int(x_val)][int(y_val)] = (radius-((x_val-(starting_x))**2/radius + (y_val-starting_y)**2/radius))/radius
 
     #Plot the grid with pyqtgraph.
     d1.hideTitleBar()
@@ -112,7 +118,7 @@ def DataConstruction(location1, location2, radius):
             return
         if counter < 0:
             return
-        if counter < 100:
+        if counter < length_time:
             for i in range(len(z)):
                 #shift = 20
                 
@@ -120,7 +126,7 @@ def DataConstruction(location1, location2, radius):
                 #    shift = math.floor(((i + 1)/5))
                 #else:
                 #    shift = math.floor(((-i+rows)/5))
-                shift = math.floor(-(i-250)**2/5000 + 12.5)
+                shift = math.floor(InitialConditions.VelocityFunction(i))
                 if shift == 0:
                     shift = 1
                 for j in range(shift):
@@ -143,10 +149,10 @@ def DataConstruction(location1, location2, radius):
         else:     
             CorrelationList = np.correlate(NewLineSum2, NewLineSum, mode='full')
             middle = rows/2
-            lag = abs(location2 - location1)/math.floor(-(middle-250)**2/5000 + 12.5)
+            lag = abs(location2 - location1)/math.floor(InitialConditions.VelocityFunction(middle))
 
             crosscorrelationPlot.setData(CorrelationList)
-            crosscorrelationData.append([CorrelationList, location1, location2, abs(location2 - location1), lag])
+            crosscorrelationData.append(CorrelationList)
             
             end = True
             w.close()

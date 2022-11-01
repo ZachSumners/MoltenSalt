@@ -13,9 +13,11 @@ def InitialRadius(radius):
         radius = 50
     return radius
 
-#def InitialCoords():
-#    x = 150
-#    y = 150
-#    return [x, y]
+def InitialCoords():
+    x = 250
+    y = 150
+    return [x, y]
 
-#def InitialFlowSpeed():
+def VelocityFunction(i):
+    vel = -(i-250)**2/5000 + 12.5
+    return vel

@@ -9,19 +9,6 @@ location2s = []
 offsets = []
 lags = []
 
-loops = 5
-for i in range(loops):
-    location1 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[0]
-    location2 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[1]
-    radius = InitialConditions.InitialRadius(100)
-    results = DatasetConstruction.DataConstruction(location1, location2, radius)
-
-    data.append(results[0][0])
-    location1s.append(results[0][1])
-    location2s.append(results[0][2])
-    offsets.append(results[0][3])
-    lags.append(results[0][4])
-
 dfparameters = pd.DataFrame()
 
 #############################################
@@ -42,13 +29,30 @@ dfdata = pd.DataFrame()
 # END          | DATA   |      |     |
 #############################################
 
-timelist = np.arange(0, len(data[0]), 1)
-dfdata['Time Elapsed'] = timelist
+timelimit = 100
 
+loops = 2
 for i in range(loops):
+    location1 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[0]
+    location2 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[1]
+    radius = InitialConditions.InitialRadius(100)
+    starting_x = InitialConditions.InitialCoords()[0]
+    starting_y = InitialConditions.InitialCoords()[1]
+
+    lagtime = InitialConditions.VelocityFunction(500/2)
+
+    results = DatasetConstruction.DataConstruction(location1, location2, radius, starting_x, starting_y, timelimit)
+    
+    if i == 0:
+        timelist = np.arange(0, len(results[0]), 1)
+    dfdata['Time Elapsed'] = timelist
+
     name = "Cross Correlation Sim " + str(i+1)
-    dfdata[name] = data[i]
-    dfparameters[name] = np.array([location1s[i], location2s[i], offsets[i], lags[i]])
+    dfdata[name] = results[0]
+    dfparameters[name] = np.array([location1, location2, abs(location2 - location1), lagtime])
+
+
+    
 
 dfdata.to_csv("MoltenSaltDataframe.csv")
 dfparameters.to_csv("MoltenSaltParameters.csv")
