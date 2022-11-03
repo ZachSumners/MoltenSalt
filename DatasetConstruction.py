@@ -9,7 +9,7 @@ from pyqtgraph.dockarea.Dock import Dock
 from pyqtgraph.dockarea.DockArea import DockArea
 import InitialConditions
 
-def DataConstruction(location1, location2, radius, starting_x, starting_y, length_time):
+def DataConstruction(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, p1, counter, z, app
     ## Create a GL View widget to display data
     app = pg.mkQApp("Single eddy cross correlation")
@@ -34,8 +34,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     area.addDock(d4, 'bottom', d3)
 
     #Initialize the random pipe cross section (grid) and the single eddy at the beginning.
-    rows = 500
-    cols = 2000
+
     x = np.linspace(0, rows, rows+1)
     y = np.linspace(0, cols, cols+1)
     z = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
@@ -49,7 +48,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     for x_val in x:
         for y_val in y:
             if ((x_val-(rows/2))**2+(y_val-radius)**2 <= radius**2):
-                z[int(x_val)][int(y_val)] = (radius-((x_val-(starting_x))**2/radius + (y_val-starting_y)**2/radius))/radius
+                z[int(x_val)][int(y_val)] = 1#(radius-((x_val-(starting_x))**2/radius + (y_val-starting_y)**2/radius))/radius
 
     #Plot the grid with pyqtgraph.
     d1.hideTitleBar()
@@ -126,7 +125,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
                 #    shift = math.floor(((i + 1)/5))
                 #else:
                 #    shift = math.floor(((-i+rows)/5))
-                shift = math.floor(InitialConditions.VelocityFunction(i))
+                shift = math.floor(InitialConditions.VelocityFunction(i, rows))
                 if shift == 0:
                     shift = 1
                 for j in range(shift):
@@ -149,7 +148,6 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
         else:     
             CorrelationList = np.correlate(NewLineSum2, NewLineSum, mode='full')
             middle = rows/2
-            lag = abs(location2 - location1)/math.floor(InitialConditions.VelocityFunction(middle))
 
             crosscorrelationPlot.setData(CorrelationList)
             crosscorrelationData.append(CorrelationList)

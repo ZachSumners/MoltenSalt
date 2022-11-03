@@ -18,6 +18,5 @@ def InitialCoords():
     y = 150
     return [x, y]
 
-def VelocityFunction(i):
-    vel = -(i-250)**2/5000 + 12.5
-    return vel
+def VelocityFunction(i, size):
+    return -(i-size/2)**2/5000 + 12.5

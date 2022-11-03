@@ -2,12 +2,7 @@ import DatasetConstruction
 import InitialConditions
 import pandas as pd
 import numpy as np
-
-data = []
-location1s = []
-location2s = []
-offsets = []
-lags = []
+import scipy.integrate
 
 dfparameters = pd.DataFrame()
 
@@ -30,6 +25,8 @@ dfdata = pd.DataFrame()
 #############################################
 
 timelimit = 100
+rows = 500
+cols = 2000
 
 loops = 2
 for i in range(loops):
@@ -39,9 +36,9 @@ for i in range(loops):
     starting_x = InitialConditions.InitialCoords()[0]
     starting_y = InitialConditions.InitialCoords()[1]
 
-    lagtime = InitialConditions.VelocityFunction(500/2)
+    lagtime = scipy.integrate.quad(InitialConditions.VelocityFunction, 0, rows, args=rows)[0]/rows
 
-    results = DatasetConstruction.DataConstruction(location1, location2, radius, starting_x, starting_y, timelimit)
+    results = DatasetConstruction.DataConstruction(location1, location2, radius, starting_x, starting_y, timelimit, rows, cols)
     
     if i == 0:
         timelist = np.arange(0, len(results[0]), 1)
