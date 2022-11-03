@@ -59,7 +59,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #Plot the first line integral.
     d2.hideTitleBar()
     wPlotLine1 = pg.PlotWidget(title="Ultrasonic Signal, Location 1")
-    wPlotLine1.setXRange(0, 50, padding=0)
+    wPlotLine1.setXRange(0, length_time, padding=0)
     wPlotLine1.setLabel('bottom', 'Time')
     wPlotLine1.setLabel('left', 'Strength')
     LineIntegralPlot = wPlotLine1.plot(pen='k')
@@ -68,7 +68,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #Plot the second line integral.
     d3.hideTitleBar()
     wPlotLine2 = pg.PlotWidget(title="Ultrasonic Signal, Location 2")
-    wPlotLine2.setXRange(0, 50, padding=0)
+    wPlotLine2.setXRange(0, length_time, padding=0)
     wPlotLine2.setLabel('bottom', 'Time')
     wPlotLine2.setLabel('left', 'Strength')
     LineIntegralPlot2 = wPlotLine2.plot(pen='k')
@@ -77,7 +77,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #Plot the cross correlation (which gets filled in when the simulation is done.)
     d4.hideTitleBar()
     crosscorrelation = pg.PlotWidget(title="Cross Correlation")
-    crosscorrelation.setXRange(0, 30, padding=0)
+    crosscorrelation.setXRange(0, length_time, padding=0)
     crosscorrelation.setYRange(-100, 200, padding=0)
     crosscorrelation.setLabel('bottom', 'Time')
     crosscorrelation.setLabel('left', 'Strength')

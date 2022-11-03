@@ -2,12 +2,15 @@ import DatasetConstruction
 import InitialConditions
 import pandas as pd
 import numpy as np
-import scipy.integrate
+import math
 
 dfparameters = pd.DataFrame()
 
 #############################################
 # SIM1   | SIM2 | ... | SIM N
+# RADIUS |      |     |
+# X0     |      |     |
+# Y0     |      |     |
 # LOC1   |      |     |
 # LOC2   |      |     |
 # RADIUS |      |     |
@@ -24,19 +27,19 @@ dfdata = pd.DataFrame()
 # END          | DATA   |      |     |
 #############################################
 
-timelimit = 100
+timelimit = 200
 rows = 500
 cols = 2000
 
 loops = 2
 for i in range(loops):
-    location1 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[0]
-    location2 = InitialConditions.InitialLocations(0, 0, 50, 50, 200, 300, i)[1]
-    radius = InitialConditions.InitialRadius(100)
+    location1 = InitialConditions.InitialLocations(0, 0)[0]
+    location2 = InitialConditions.InitialLocations(0, 0)[1]
+    radius = InitialConditions.InitialRadius(0)
     starting_x = InitialConditions.InitialCoords()[0]
     starting_y = InitialConditions.InitialCoords()[1]
 
-    lagtime = scipy.integrate.quad(InitialConditions.VelocityFunction, 0, rows, args=rows)[0]/rows
+    velocity = math.floor(InitialConditions.VelocityFunction(rows/2, rows))
 
     results = DatasetConstruction.DataConstruction(location1, location2, radius, starting_x, starting_y, timelimit, rows, cols)
     
@@ -46,7 +49,7 @@ for i in range(loops):
 
     name = "Cross Correlation Sim " + str(i+1)
     dfdata[name] = results[0]
-    dfparameters[name] = np.array([location1, location2, abs(location2 - location1), lagtime])
+    dfparameters[name] = np.array([radius, starting_x, starting_y, location1, location2, location2 - location1, velocity])
 
 
     
