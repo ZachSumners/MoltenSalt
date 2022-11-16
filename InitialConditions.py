@@ -21,12 +21,16 @@ def InitialRadius(radius):
         radius = math.floor(np.random.normal(100, 10))
     return radius
 
-def InitialCoords():
-    x = 250
-    y = 150
+def InitialCoords(radius):
+    x = math.floor(np.random.normal(250, 50))
+    y = radius + 1
+    if radius >= x:
+        x = radius + 1
+    if 500 - radius <= x:
+        x = 500 - radius - 1
     return [x, y]
 
 def VelocityFunction(i, size):
-    return -(i-size/2)**2/5000 + 15.5
+    return -(i-size/2)**2/5000 + 12.5
 
 #def EddyShape()

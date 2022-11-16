@@ -1,3 +1,5 @@
+from turtle import st
+import wave
 import numpy as np
 import math
 import pyqtgraph as pg
@@ -8,6 +10,7 @@ from pyqtgraph.Qt import QtWidgets
 from pyqtgraph.dockarea.Dock import Dock
 from pyqtgraph.dockarea.DockArea import DockArea
 import InitialConditions
+import scipy.signal
 
 def DataConstruction(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, p1, counter, z, app
@@ -41,15 +44,21 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #z = np.random.random((rows+1, cols+1)) #Between 0 and 1
     #radius = 50
 
+    #Track which pixels are apart of the eddy
+    structure = []
+
     if starting_x < radius or starting_x > rows-radius or starting_y < radius or starting_y > rows-radius:
         print("Invalid eddy coordinates.")
         return [[0]]
 
     for x_val in x:
         for y_val in y:
-            if ((x_val-(rows/2))**2+(y_val-radius)**2 <= radius**2):
-                z[int(x_val)][int(y_val)] = 1#(radius-((x_val-(starting_x))**2/radius + (y_val-starting_y)**2/radius))/radius
-
+            if ((x_val-(starting_x))**2+(y_val-(starting_y))**2 <= radius**2):
+                z[int(x_val)][int(y_val)] = 1-(x_val-starting_x)**2/radius**2 - (y_val-starting_y)**2/radius**2
+                #Add eddy pixels to list for tracking.
+                structure.append([int(x_val), int(y_val)])
+    
+    print(z.shape)
     #Plot the grid with pyqtgraph.
     d1.hideTitleBar()
     wGrid = pg.ImageView()
@@ -77,8 +86,8 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #Plot the cross correlation (which gets filled in when the simulation is done.)
     d4.hideTitleBar()
     crosscorrelation = pg.PlotWidget(title="Cross Correlation")
-    crosscorrelation.setXRange(0, length_time, padding=0)
-    crosscorrelation.setYRange(-100, 200, padding=0)
+    crosscorrelation.setXRange(0, length_time*2, padding=0)
+    crosscorrelation.setYRange(-1, 1, padding=0)
     crosscorrelation.setLabel('bottom', 'Time')
     crosscorrelation.setLabel('left', 'Strength')
     crosscorrelationPlot = crosscorrelation.plot(pen='k')
@@ -104,10 +113,14 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
 
     #Pd dataframe prestorage
     crosscorrelationData = []
+    means = []
+    loc1track = []
+    loc2track = []
 
     def update():
         global counter, NewLineSum, NewLineSum2, z, end
         stime = time.time()
+        
         counter += 1
         ColumnValue = 0
         ColumnValue2 = 0
@@ -119,56 +132,87 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
             return
         if counter < length_time:
             for i in range(len(z)):
-                #shift = 20
-                
-                #if i < (rows/2):
-                #    shift = math.floor(((i + 1)/5))
-                #else:
-                #    shift = math.floor(((-i+rows)/5))
                 shift = math.floor(InitialConditions.VelocityFunction(i, rows))
                 if shift == 0:
                     shift = 1
                 for j in range(shift):
                     z[i] = np.append([2*np.random.random()-1], z[i][:-1]) #Between -1 and 1
                     #z[i] = np.append([np.random.random()], z[i][:-1]) #Between 0 and 1
+  
+            ColumnValue = np.sum(z, axis=0)[location1]
+            ColumnValue2 = np.sum(z, axis=0)[location2]
+            NewLineSum = np.append(LineSum, np.array([ColumnValue]))
+            NewLineSum2 = np.append(LineSum2, np.array([ColumnValue2]))
 
-                ColumnValue = LineIntegralSum(location1, z[i], ColumnValue)
-                ColumnValue2 = LineIntegralSum(location2, z[i], ColumnValue2)    
-            ColumnArray = np.array([ColumnValue])
-            NewLineSum = np.append(LineSum, ColumnArray)
-            ColumnArray2 = np.array([ColumnValue2])
-            NewLineSum2 = np.append(LineSum2, ColumnArray2)
+            loc1count = 0
+            loc2count = 0
+            for c in range(len(structure)):
+                if structure[c][1] == location1:
+                    loc1count += 1
+                if structure[c][1] == location2:
+                    loc2count += 1
+                
+                shift_border = math.floor(InitialConditions.VelocityFunction(structure[c][0], rows))
+                structure[c][1] += shift_border
+
+            loc1track.append(loc1count)
+            loc2track.append(loc2count)
+            
+            mean = sum(elt[1] for elt in structure)/len(structure)        
+            means.append(mean)
+
             
             wGrid.setImage(z)
 
             LineIntegralPlot.setData(NewLineSum)
             LineIntegralPlot2.setData(NewLineSum2)
-            print('{:.0f} FPS'.format(1 / (time.time() - stime)))
+            #print('{:.0f} FPS'.format(1 / (time.time() - stime)))
 
         else:     
-            CorrelationList = np.correlate(NewLineSum2, NewLineSum, mode='full')
-            middle = rows/2
+            CorrelationList = scipy.signal.correlate(NewLineSum2, NewLineSum, mode='full')
+            
 
-            crosscorrelationPlot.setData(CorrelationList)
+            crosscorrelationPlot.setData(CorrelationList/max(CorrelationList))
             crosscorrelationData.append(CorrelationList)
             
             end = True
             w.close()
-            
-
-    #Sum the grid cross section as the signal data point.
-    def LineIntegralSum(columnNumber, row, ColumnValue):
-        ColumnValue += row[columnNumber]
-        return ColumnValue
     
     timer = QtCore.QTimer()
     timer.timeout.connect(update)
-    timer.start(10)
+    timer.start(2)
 
     #if __name__ == '__main__':
     pg.exec()
-  
-    return crosscorrelationData
+
+    def find_nearest(array, value):
+        array = np.asarray(array)
+        idx = (np.abs(array - value)).argmin()
+        return array[idx]
+
+    def time_cross(closest, location, rows, starting_x):
+        difference = location - closest
+        
+        speed = math.floor(InitialConditions.VelocityFunction(starting_x, rows))
+        crossed = difference/speed
+        return crossed
+
+    middleloc1 = find_nearest(means, location1)
+    middleloc2 = find_nearest(means, location2)
+
+    loc1cross = time_cross(middleloc1, location1, rows, starting_x)
+    timeone = means.index(middleloc1) + loc1cross
+    loc2cross = time_cross(middleloc2, location2, rows, starting_x)
+    timetwo = means.index(middleloc2) + loc2cross
+    #print(timetwo - timeone)
+
+    #loc1track = np.asarray(loc1track)
+    #loc2track = np.asarray(loc2track)
+    #maxloc1 = np.argmax(loc1track)
+    #maxloc2 = np.argmax(loc2track)
+    #print(maxloc2 - maxloc1)
+
+    return [crosscorrelationData, timetwo-timeone]
 
 #Module supports
 if __name__ == "__main__":
