@@ -39,17 +39,19 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #Initialize the random pipe cross section (grid) and the single eddy at the beginning.
     x = np.linspace(0, rows, rows+1)
     y = np.linspace(0, cols, cols+1)
-    z = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
+    noiseOverlay = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
     #z = np.random.random((rows+1, cols+1)) #Between 0 and 1
     
-    structure_func = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, z, x, y)
-    z = structure_func[0]
+    structure_func = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
+    structure1overlay = structure_func[0]
     structure = structure_func[1]
+
+    structure2overlayInitial = np.zeros((rows+1,cols+1))
 
     #Plot the grid with pyqtgraph.
     d1.hideTitleBar()
     wGrid = pg.ImageView()
-    p1 = wGrid.setImage(z)
+    p1 = wGrid.setImage(noiseOverlay)
     d1.addWidget(wGrid)
 
     #Plot the first line integral.
@@ -99,11 +101,12 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
 
     #Group velocity lists
     means = []
+    means2 = []
     loc1track = []
     loc2track = []
 
-    def update():
-        global counter, NewLineSum, NewLineSum2, z, end
+    def update(noiseOverlay, structure1overlay):
+        global counter, NewLineSum, NewLineSum2, end, structure2overlay
         stime = time.time()
         
         counter += 1
@@ -119,19 +122,21 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
         if counter < length_time:
 
             if counter == 50:
-                structure_func2 = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, z, x, y)
-                z = structure_func2[0]
+                structure_func2 = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
+                structure2overlay = structure_func2[0]
+                global structure2
                 structure2 = structure_func2[1]
+            
+            if counter >= 50:
+                noiseOverlay = SimulationFunctions.flow(noiseOverlay, rows, True, 1)
+                structure1overlay = SimulationFunctions.flow(np.asarray(structure1overlay), rows, False, 1)
+                structure2overlay = SimulationFunctions.flow(np.asarray(structure2overlay), rows, False, 2)
+                z = noiseOverlay + structure1overlay + structure2overlay
+            else:
+                noiseOverlay = SimulationFunctions.flow(noiseOverlay, rows, True, 1)
+                structure1overlay = SimulationFunctions.flow(np.asarray(structure1overlay), rows, False, 1)
+                z = noiseOverlay + structure1overlay
 
-
-            for i in range(len(z)):
-                shift = math.floor(InitialConditions.VelocityFunction(i, rows))
-                if shift == 0:
-                    shift = 1
-                for j in range(shift):
-                    z[i] = np.append([2*np.random.random()-1], z[i][:-1]) #Between -1 and 1
-                    #z[i] = np.append([np.random.random()], z[i][:-1]) #Between 0 and 1
-  
             ColumnValue = np.sum(z, axis=0)[location1]
             ColumnValue2 = np.sum(z, axis=0)[location2]
             NewLineSum = np.append(LineSum, np.array([ColumnValue]))
@@ -139,8 +144,14 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
 
             structure1GroupVel = SimulationFunctions.group_velocity_calc(structure, location1, location2, rows, means, loc1track, loc2track)
             means.append(structure1GroupVel[0])
-            loc1track.append(structure1GroupVel[1])
-            loc2track.append(structure1GroupVel[2])
+            #loc1track.append(structure1GroupVel[1])
+            #loc2track.append(structure1GroupVel[2])
+
+            if counter > 50:
+                structure2GroupVel = SimulationFunctions.group_velocity_calc(structure2, location1, location2, rows, means, loc1track, loc2track)
+                means2.append(structure2GroupVel[0])
+                #loc1track.append(structure1GroupVel[1])
+                #loc2track.append(structure1GroupVel[2])
             
             wGrid.setImage(z)
 
@@ -157,19 +168,16 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
             w.close()
     
     timer = QtCore.QTimer()
-    timer.timeout.connect(update)
-    timer.start(2)
+    timer.timeout.connect(lambda: update(noiseOverlay, structure1overlay))
+    timer.start(50)
 
     #if __name__ == '__main__':
     pg.exec()
 
-    middleloc1 = SimulationFunctions.find_nearest(means, location1)
-    middleloc2 = SimulationFunctions.find_nearest(means, location2)
+    groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
+    groupvel2 = SimulationFunctions.group_velocity_value(means2, location1, location2, rows, starting_x)
 
-    loc1cross = SimulationFunctions.time_cross(middleloc1, location1, rows, starting_x)
-    timeone = means.index(middleloc1) + loc1cross
-    loc2cross = SimulationFunctions.time_cross(middleloc2, location2, rows, starting_x)
-    timetwo = means.index(middleloc2) + loc2cross
+    print(groupvel1, groupvel2)
 
     #loc1track = np.asarray(loc1track)
     #loc2track = np.asarray(loc2track)
@@ -177,7 +185,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #maxloc2 = np.argmax(loc2track)
     #print(maxloc2 - maxloc1)
 
-    return [crosscorrelationData, timetwo-timeone]
+    return [crosscorrelationData, groupvel1]
 
 #Module supports
 if __name__ == "__main__":

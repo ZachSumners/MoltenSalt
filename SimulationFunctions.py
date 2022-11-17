@@ -18,9 +18,10 @@ def group_velocity_calc(structure, location1, location2, rows, means, loc1track,
 
         return (mean, loc1count, loc2count)
 
-def spawn_structure(starting_x, starting_y, rows, cols, radius, z, x, y):
+def spawn_structure(starting_x, starting_y, rows, cols, radius, x, y):
         #Track which pixels are apart of the eddy
         structure = []
+        eddy = np.zeros((rows+1,cols+1))
 
         if starting_x < radius or starting_x > rows-radius or starting_y < radius or starting_y > rows-radius:
             print("Invalid eddy coordinates.")
@@ -29,11 +30,11 @@ def spawn_structure(starting_x, starting_y, rows, cols, radius, z, x, y):
         for x_val in x:
             for y_val in y:
                 if ((x_val-(starting_x))**2+(y_val-(starting_y))**2 <= radius**2):
-                    z[int(x_val)][int(y_val)] = 1-(x_val-starting_x)**2/radius**2 - (y_val-starting_y)**2/radius**2
+                    eddy[int(x_val)][int(y_val)] = 2*(1-(x_val-starting_x)**2/radius**2 - (y_val-starting_y)**2/radius**2)
                     #Add eddy pixels to list for tracking.
                     structure.append([int(x_val), int(y_val)])
         
-        return (z, structure)
+        return (eddy, structure)
 
 def find_nearest(array, value):
     array = np.asarray(array)
@@ -46,3 +47,28 @@ def time_cross(closest, location, rows, starting_x):
     speed = math.floor(InitialConditions.VelocityFunction(starting_x, rows))
     crossed = difference/speed
     return crossed
+
+def group_velocity_value(means, location1, location2, rows, starting_x):
+    middleloc1 = find_nearest(means, location1)
+    middleloc2 = find_nearest(means, location2)
+
+    loc1cross = time_cross(middleloc1, location1, rows, starting_x)
+    timeone = means.index(middleloc1) + loc1cross
+    loc2cross = time_cross(middleloc2, location2, rows, starting_x)
+    timetwo = means.index(middleloc2) + loc2cross
+
+    return (timetwo - timeone)
+
+def flow(z, rows, noise, multiplier):
+    for i in range(len(z)):
+        shift = multiplier*math.floor(InitialConditions.VelocityFunction(i, rows))
+        if shift == 0:
+            shift = 1
+        for j in range(shift):
+            if noise == True:
+                z[i] = np.append([2*np.random.random()-1], z[i][:-1]) #Between -1 and 1
+                #z[i] = np.append([np.random.random()], z[i][:-1]) #Between 0 and 1
+            else:
+                z[i] = np.append([0], z[i][:-1])
+    
+    return z
