@@ -31,7 +31,7 @@ timelimit = 200
 rows = 500
 cols = 2000
 
-loops = 25
+loops = 1
 for i in range(loops):
     locations = InitialConditions.InitialLocations(0, 0)
     location1 = locations[0]
