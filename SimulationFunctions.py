@@ -14,9 +14,15 @@ def group_velocity_calc(structure, location1, location2, rows, means, loc1track,
             shift_border = math.floor(InitialConditions.VelocityFunction(structure[c][0], rows))
             structure[c][1] += shift_border
         
-        mean = sum(elt[1] for elt in structure)/len(structure)        
+        mean = sum(elt[1] for elt in structure)/len(structure)   
 
         return (mean, loc1count, loc2count)
+
+def deformation_calc(structure):
+    lowest = min(elt[1] for elt in structure)
+    highest = max(elt[1] for elt in structure) 
+
+    return (highest - lowest)
 
 def spawn_structure(starting_x, starting_y, rows, cols, radius, x, y):
         #Track which pixels are apart of the eddy

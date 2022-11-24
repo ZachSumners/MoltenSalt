@@ -14,29 +14,8 @@ import SimulationFunctions
 
 import sys
 
-def DataConstruction(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
+def DataConstructionNonVisual(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, p1, counter, z, app
-    ## Create a GL View widget to display data
-    app = pg.mkQApp("Single eddy cross correlation")
-    w = QtWidgets.QMainWindow()
-    area = DockArea()
-    w.setCentralWidget(area)
-    w.setWindowTitle('Single eddy cross correlation')
-    w.resize(1000, 600)
-
-    #Change plot background and foreground colours.
-    pg.setConfigOption('background', 'w')
-    pg.setConfigOption('foreground', 'k')
-
-    #Create the different "docks" (widgets the different plots live in).
-    d1 = Dock("Dock1", size=(300, 500))
-    d2 = Dock("Dock 2", size=(400, 300))
-    d3 = Dock("Dock 2", size=(400, 300))
-    d4 = Dock("Dock 2", size=(400, 300))
-    area.addDock(d1, 'left')
-    area.addDock(d2, 'right')
-    area.addDock(d3, 'bottom', d2)
-    area.addDock(d4, 'bottom', d3)
 
     #Initialize the random pipe cross section (grid) and the single eddy at the beginning.
     x = np.linspace(0, rows, rows+1)
@@ -49,43 +28,6 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     structure = structure_func[1]
 
     structure2overlayInitial = np.zeros((rows+1,cols+1))
-
-    #Plot the grid with pyqtgraph.
-    d1.hideTitleBar()
-    wGrid = pg.ImageView()
-    p1 = wGrid.setImage(noiseOverlay)
-    d1.addWidget(wGrid)
-
-    #Plot the first line integral.
-    d2.hideTitleBar()
-    wPlotLine1 = pg.PlotWidget(title="Ultrasonic Signal, Location 1")
-    wPlotLine1.setXRange(0, length_time, padding=0)
-    wPlotLine1.setLabel('bottom', 'Time')
-    wPlotLine1.setLabel('left', 'Strength')
-    LineIntegralPlot = wPlotLine1.plot(pen='k')
-    d2.addWidget(wPlotLine1)
-
-    #Plot the second line integral.
-    d3.hideTitleBar()
-    wPlotLine2 = pg.PlotWidget(title="Ultrasonic Signal, Location 2")
-    wPlotLine2.setXRange(0, length_time, padding=0)
-    wPlotLine2.setLabel('bottom', 'Time')
-    wPlotLine2.setLabel('left', 'Strength')
-    LineIntegralPlot2 = wPlotLine2.plot(pen='k')
-    d3.addWidget(wPlotLine2)
-
-    #Plot the cross correlation (which gets filled in when the simulation is done.)
-    d4.hideTitleBar()
-    crosscorrelation = pg.PlotWidget(title="Cross Correlation")
-    crosscorrelation.setXRange(0, length_time*2, padding=0)
-    crosscorrelation.setYRange(-1, 1, padding=0)
-    crosscorrelation.setLabel('bottom', 'Time')
-    crosscorrelation.setLabel('left', 'Strength')
-    crosscorrelationPlot = crosscorrelation.plot(pen='k')
-    d4.addWidget(crosscorrelation)
-
-    #Show the plotting window.
-    w.show()
 
     #Controls how long the simulation runs (in frames)
     counter = 0
@@ -115,10 +57,11 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
         ColumnValue = 0
         ColumnValue2 = 0
         LineSum = NewLineSum
-        LineSum2 = NewLineSum2      
+        LineSum2 = NewLineSum2
 
         if counter < 0:
             return
+        
         if counter < length_time:
 
             #if counter == 50:
@@ -152,31 +95,21 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
             #    means2.append(structure2GroupVel[0])
                 #loc1track.append(structure1GroupVel[1])
                 #loc2track.append(structure1GroupVel[2])
-            
-            wGrid.setImage(z)
+            return [noiseOverlay, structure1overlay, []]
 
-            LineIntegralPlot.setData(NewLineSum)
-            LineIntegralPlot2.setData(NewLineSum2)
-            #print('{:.0f} FPS'.format(1 / (time.time() - stime)))
 
-        else:    
+        else:   
             CorrelationList = scipy.signal.correlate(NewLineSum2, NewLineSum, mode='full')
-            crosscorrelationPlot.setData(CorrelationList/max(CorrelationList))
             crosscorrelationData.append(CorrelationList)
-            
-            
-            w.close()
-            return
+            return [noiseOverlay, structure1overlay, crosscorrelationData]
     
-    timer = QtCore.QTimer()
-    timer.timeout.connect(lambda: update(noiseOverlay, structure1overlay))
-    timer.start(1)
-
-
-    #if __name__ == '__main__':
-    pg.exec()
+    for counter in range(length_time):
+        overlays = update(noiseOverlay, structure1overlay)
+        noiseOverlay = overlays[0]
+        structure1overlay = overlays[1]
+        crosscorrelationData = overlays[2]
     
-    deformation = SimulationFunctions.deformation_calc(structure)
+
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
     #groupvel2 = SimulationFunctions.group_velocity_value(means2, location1, location2, rows, starting_x)
 
@@ -188,7 +121,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #maxloc2 = np.argmax(loc2track)
     #print(maxloc2 - maxloc1)
 
-    return [crosscorrelationData, groupvel1, deformation]
+    return [crosscorrelationData, groupvel1]
     
 
 #Module supports
