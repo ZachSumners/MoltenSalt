@@ -1,22 +1,27 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import datasets, linear_model
-from sklearn.metrics import mean_squared_error, r2_score
 import pandas as pd
+from sklearn.tree import DecisionTreeRegressor
 
 #Load Cross correlation dataset
 CCdata = pd.read_csv('MoltenSaltDataframe.csv')
-CCdata_x = np.arange(0, CCdata.shape[0], 1)
+print(CCdata.shape)
 
-plt.plot(CCdata_x, CCdata['Cross Correlation Sim 1'])
-plt.show()
+rng = np.random.RandomState(1)
+X = np.sort(396 * rng.rand(397, 1), axis=0)
+
 
 #Split data into training and testing sets
-CCdata_train = CCdata[:-100]
-CCdata_test = CCdata[-100:]
+regr_1 = DecisionTreeRegressor(max_depth=5)
+regr_1.fit(X, CCdata)
 
-#Linear regression object
-regr = linear_model.LinearRegression()
+X_test = np.arange(0.0, 396, 1)[:, np.newaxis]
+y_1 = regr_1.predict(X_test)
 
-#Train model using training sets
-#regr.fit()
+plt.scatter(X, CCdata, s=10, c='red', label="data")
+plt.plot(X_test, y_1, color="cornflowerblue", label="max_depth=2", linewidth=2)
+plt.xlabel("data")
+plt.ylabel("target")
+plt.title("Decision Tree Regression")
+plt.legend()
+plt.show()

@@ -31,6 +31,10 @@ def InitialCoords(radius):
     return [x, y]
 
 def VelocityFunction(i, size):
-    return -(i-size/2)**2/5000 + 12.5
+    #return -(i-size/2)**2/5000 + 12.5'
+    #if i <= 250:
+    return 15
+    #else:
+        #return -i/20 + 25
 
 #def EddyShape()

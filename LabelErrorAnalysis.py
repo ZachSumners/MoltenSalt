@@ -18,30 +18,32 @@ for i in range(numplots):
     lags = scipy.signal.correlation_lags((len(normalized)+1)/2, (len(normalized)+1)/2, mode='full')
     lag = lags[np.argmax(normalized)]
 
-    error = abs(dfparams['Cross Correlation Sim ' + str(i+1)][5]/lag - dfparams['Cross Correlation Sim ' + str(i+1)][5]/dfparams['Cross Correlation Sim ' + str(i+1)][6])
+    error = (dfparams['Cross Correlation Sim ' + str(i+1)][5]/lag - dfparams['Cross Correlation Sim ' + str(i+1)][5]/dfparams['Cross Correlation Sim ' + str(i+1)][6])
     offset = dfparams['Cross Correlation Sim ' + str(i+1)][5]
     xstart = dfparams['Cross Correlation Sim ' + str(i+1)][1]
     deformation = dfparams['Cross Correlation Sim ' + str(i+1)][7]
     
-    if error < 2:
+    if error > -2:
         errorlist.append(error)
         offsetlist.append(offset)
         xvals.append(xstart)
         deformationlist.append(deformation)
 
-deformationlist = np.asarray(deformationlist)
+xvals = np.asarray(xvals)
 errorlist = np.asarray(errorlist)
-idx = np.isfinite(deformationlist) & np.isfinite(errorlist) 
-x1, x0 = np.polyfit(deformationlist[idx], errorlist[idx], 1)
+idx = np.isfinite(xvals) & np.isfinite(errorlist) 
+x1, x0 = np.polyfit(xvals[idx], errorlist[idx], 1)
 print(x1, x0)
 
-x = np.arange(500, 1750, 1)
-#plt.scatter(offsetlist, errorlist)
-plt.scatter(deformationlist, errorlist)
+x = np.arange(0, 500, 1)
+plt.scatter(xvals, errorlist)
+#plt.scatter(deformationlist, errorlist)
 plt.plot(x, x1 * x + x0)
+#plt.plot(x, 0.05*x)
 #plt.plot(x, 0.0001*x**2 - 0.05*x + 6.75)
-plt.xlabel('Max Deformation')
+plt.xlabel('Median X Position')
 plt.ylabel('Velocity Error')
-plt.ylim(-0.1, 2)
+#plt.ylim(-0.1, 2)
+plt.xlim(0, 500)
 plt.grid()
 plt.show()

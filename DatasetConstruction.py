@@ -178,6 +178,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     
     deformation = SimulationFunctions.deformation_calc(structure)
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
+    print(means)
     #groupvel2 = SimulationFunctions.group_velocity_value(means2, location1, location2, rows, starting_x)
 
     #print(groupvel1)#, groupvel2)

@@ -34,7 +34,7 @@ cols = 2000
 
 visual = True
 
-loops = 50
+loops = 1
 for i in range(loops):
     print('SIMULATION ', str(i+1))
 
