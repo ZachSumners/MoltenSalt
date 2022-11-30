@@ -42,10 +42,15 @@ def spawn_structure(starting_x, starting_y, rows, cols, radius, x, y):
         
         return (eddy, structure)
 
-def find_nearest(array, value):
+def find_nearest_above(array, target):
     array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return array[idx]
+    distance_from_target = array - target
+    return np.where(distance_from_target > 0, distance_from_target, np.inf).argmin()
+    
+def find_nearest_below(array, target):
+    array = np.asarray(array)
+    distance_from_target = array - target
+    return np.where(distance_from_target < 0, distance_from_target, -np.inf).argmax()
 
 def time_cross(closest, location, rows, starting_x):
     difference = location - closest
@@ -55,15 +60,16 @@ def time_cross(closest, location, rows, starting_x):
     return crossed
 
 def group_velocity_value(means, location1, location2, rows, starting_x):
-    middleloc1 = find_nearest(means, location1)
-    middleloc2 = find_nearest(means, location2)
+    middleloc1 = find_nearest_above(means, location1)
+    middleloc2 = find_nearest_below(means, location2)
+    
+    fullsteps = middleloc2 - middleloc1
 
-    loc1cross = time_cross(middleloc1, location1, rows, starting_x)
-    timeone = means.index(middleloc1) + loc1cross
-    loc2cross = time_cross(middleloc2, location2, rows, starting_x)
-    timetwo = means.index(middleloc2) + loc2cross
+    loc1cross = abs(time_cross(means[middleloc1], location1, rows, starting_x))
+    loc2cross = time_cross(means[middleloc2], location2, rows, starting_x)
+    print(loc1cross, loc2cross, fullsteps)
 
-    return (timetwo - timeone)
+    return (loc1cross + fullsteps + loc2cross)
 
 def flow(z, rows, noise, multiplier):
     for i in range(len(z)):
