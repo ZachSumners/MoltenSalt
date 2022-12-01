@@ -2,25 +2,9 @@ import InitialConditions
 import math
 import numpy as np
 
-def group_velocity_calc(structure, location1, location2, rows, means, loc1track, loc2track):
-        loc1count = 0
-        loc2count = 0
-        for c in range(len(structure)):
-            if structure[c][1] == location1:
-                loc1count += 1
-            if structure[c][1] == location2:
-                loc2count += 1
-            
-            shift_border = math.floor(InitialConditions.VelocityFunction(structure[c][0], rows))
-            structure[c][1] += shift_border
-        
-        mean = sum(elt[1] for elt in structure)/len(structure)   
-
-        return (mean, loc1count, loc2count)
-
 def deformation_calc(structure):
-    lowest = min(elt[1] for elt in structure)
-    highest = max(elt[1] for elt in structure) 
+    lowest = min(structure)
+    highest = max(structure) 
 
     return (highest - lowest)
 
@@ -70,6 +54,15 @@ def group_velocity_value(means, location1, location2, rows, starting_x):
     
 
     return (loc1cross + fullsteps + loc2cross)
+
+def deformation_value(means, deformations, location1, location2):
+    index1 = find_nearest_above(means, location1)
+    index2 = find_nearest_below(means, location2)
+
+    def1 = deformations[index1]
+    def2 = deformations[index2]
+
+    return (def2 - def1)
 
 def flow(z, rows, noise, multiplier):
     for i in range(len(z)):
