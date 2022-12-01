@@ -67,7 +67,7 @@ def group_velocity_value(means, location1, location2, rows, starting_x):
 
     loc1cross = abs(time_cross(means[middleloc1], location1, rows, starting_x))
     loc2cross = time_cross(means[middleloc2], location2, rows, starting_x)
-    print(loc1cross, loc2cross, fullsteps)
+    
 
     return (loc1cross + fullsteps + loc2cross)
 

@@ -14,9 +14,9 @@ dfparameters = pd.DataFrame()
 # Y0     |      |     |
 # LOC1   |      |     |
 # LOC2   |      |     |
-# RADIUS |      |     |
 # OFFSET |      |     |
-# GROUPV |      |     |
+# GROUPT |      |     |
+# DEFORM |      |     |
 #############################################
 
 dfdata = pd.DataFrame()

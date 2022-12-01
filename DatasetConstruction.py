@@ -1,5 +1,6 @@
 from turtle import st
 import numpy as np
+import numpy.ma as ma
 import scipy.signal
 import math
 import time
@@ -106,21 +107,23 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     means2 = []
     loc1track = []
     loc2track = []
+    signal = True
+    signal2 = True
+    deformation1 = 0
+    deformation2 = 0
 
-    def update(noiseOverlay, structure1overlay):
+    def update(noiseOverlay, structure1overlay, signal, signal2, deformation1, deformation2):
         global counter, NewLineSum, NewLineSum2, end
         stime = time.time()
-        
-        counter += 1
+ 
         ColumnValue = 0
         ColumnValue2 = 0
         LineSum = NewLineSum
         LineSum2 = NewLineSum2      
 
-        if counter < 0:
-            return
-        if counter < length_time:
-
+        print(end)
+        if counter < length_time and end == False:
+            counter += 1
             #if counter == 50:
             #    structure_func2 = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
             #    structure2overlay = structure_func2[0]
@@ -142,43 +145,59 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
             NewLineSum = np.append(LineSum, np.array([ColumnValue]))
             NewLineSum2 = np.append(LineSum2, np.array([ColumnValue2]))
 
-            structure1GroupVel = SimulationFunctions.group_velocity_calc(structure, location1, location2, rows, means, loc1track, loc2track)
-            means.append(structure1GroupVel[0])
-            #loc1track.append(structure1GroupVel[1])
-            #loc2track.append(structure1GroupVel[2])
+            totalcount = sum([coords[1] for coords in np.argwhere(structure1overlay > 0)])
+            numStructureRows = len([coords[1] for coords in np.argwhere(structure1overlay > 0)])
 
-            #if counter > 50:
-            #    structure2GroupVel = SimulationFunctions.group_velocity_calc(structure2, location1, location2, rows, means, loc1track, loc2track)
-            #    means2.append(structure2GroupVel[0])
+            if numStructureRows != 0:
+                structure1GroupVel = totalcount/numStructureRows
+                print(structure1GroupVel)
+                #SimulationFunctions.group_velocity_calc(structure, location1, location2, rows, means, loc1track, loc2track)
+                means.append(structure1GroupVel)
+                
+                if structure1GroupVel > location1 and signal == True:
+                    deformation1 = SimulationFunctions.deformation_calc(structure)
+                    signal = False
+                if structure1GroupVel > location2 and signal2 == True:
+                    deformation2 = SimulationFunctions.deformation_calc(structure)
+                    signal2 = False
+                    
                 #loc1track.append(structure1GroupVel[1])
                 #loc2track.append(structure1GroupVel[2])
-            
-            wGrid.setImage(z)
 
-            LineIntegralPlot.setData(NewLineSum)
-            LineIntegralPlot2.setData(NewLineSum2)
-            #print('{:.0f} FPS'.format(1 / (time.time() - stime)))
+                #if counter > 50:
+                #    structure2GroupVel = SimulationFunctions.group_velocity_calc(structure2, location1, location2, rows, means, loc1track, loc2track)
+                #    means2.append(structure2GroupVel[0])
+                    #loc1track.append(structure1GroupVel[1])
+                    #loc2track.append(structure1GroupVel[2])
+                
+                wGrid.setImage(structure1overlay)
+
+                LineIntegralPlot.setData(NewLineSum)
+                LineIntegralPlot2.setData(NewLineSum2)
+                #print('{:.0f} FPS'.format(1 / (time.time() - stime)))
+            else:
+                end = True
 
         else:    
             CorrelationList = scipy.signal.correlate(NewLineSum2, NewLineSum, mode='full')
             crosscorrelationPlot.setData(CorrelationList/max(CorrelationList))
             crosscorrelationData.append(CorrelationList)
             
-            
+            end = True
             w.close()
             return
     
     timer = QtCore.QTimer()
-    timer.timeout.connect(lambda: update(noiseOverlay, structure1overlay))
+    timer.timeout.connect(lambda: update(noiseOverlay, structure1overlay, signal, signal2, deformation1, deformation2))
     timer.start(1)
 
 
     #if __name__ == '__main__':
     pg.exec()
     
-    deformation = SimulationFunctions.deformation_calc(structure)
+    deformation = deformation2 - deformation1
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
-    print(means)
+    
     #groupvel2 = SimulationFunctions.group_velocity_value(means2, location1, location2, rows, starting_x)
 
     #print(groupvel1)#, groupvel2)
