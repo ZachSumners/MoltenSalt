@@ -32,9 +32,9 @@ timelimit = 200
 rows = 500
 cols = 2000
 
-visual = True
+visual = False
 
-loops = 5
+loops = 500
 for i in range(loops):
     print('SIMULATION ', str(i+1))
 

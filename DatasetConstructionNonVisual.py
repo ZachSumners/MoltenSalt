@@ -25,7 +25,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
     
     structure_func = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
     structure1overlay = structure_func[0]
-    structure = structure_func[1]
+    
 
     structure2overlayInitial = np.zeros((rows+1,cols+1))
 
@@ -48,6 +48,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
     means2 = []
     loc1track = []
     loc2track = []
+    deformations = []
 
     def update(noiseOverlay, structure1overlay):
         global counter, NewLineSum, NewLineSum2, end
@@ -85,8 +86,14 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
             NewLineSum = np.append(LineSum, np.array([ColumnValue]))
             NewLineSum2 = np.append(LineSum2, np.array([ColumnValue2]))
 
-            structure1GroupVel = SimulationFunctions.group_velocity_calc(structure, location1, location2, rows, means, loc1track, loc2track)
-            means.append(structure1GroupVel[0])
+            structurecoords = [coords[1] for coords in np.argwhere(structure1overlay > 0)]
+            totalcount = sum(structurecoords)
+            numStructureRows = len(structurecoords)
+
+            if numStructureRows != 0:
+                structure1GroupVel = totalcount/numStructureRows
+                means.append(structure1GroupVel)
+                deformations.append(SimulationFunctions.deformation_calc(structurecoords))
             #loc1track.append(structure1GroupVel[1])
             #loc2track.append(structure1GroupVel[2])
 
@@ -109,7 +116,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
         structure1overlay = overlays[1]
         crosscorrelationData = overlays[2]
     
-
+    deformation = SimulationFunctions.deformation_value(means, deformations, location1, location2)
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
     #groupvel2 = SimulationFunctions.group_velocity_value(means2, location1, location2, rows, starting_x)
 
@@ -121,7 +128,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
     #maxloc2 = np.argmax(loc2track)
     #print(maxloc2 - maxloc1)
 
-    return [crosscorrelationData, groupvel1]
+    return [crosscorrelationData, groupvel1, deformation]
     
 
 #Module supports

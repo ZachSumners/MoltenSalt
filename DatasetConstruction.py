@@ -147,7 +147,6 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
 
             if numStructureRows != 0:
                 structure1GroupVel = totalcount/numStructureRows
-                print(structure1GroupVel)
                 means.append(structure1GroupVel)
                 deformations.append(SimulationFunctions.deformation_calc(structurecoords))
                     
@@ -185,7 +184,6 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     #if __name__ == '__main__':
     pg.exec()
     
-    print(means, deformations)
     deformation = SimulationFunctions.deformation_value(means, deformations, location1, location2)
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
     
