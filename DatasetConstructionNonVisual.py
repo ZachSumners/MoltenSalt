@@ -3,15 +3,9 @@ import numpy as np
 import scipy.signal
 import math
 import time
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
-from pyqtgraph.Qt import QtCore
-from pyqtgraph.Qt import QtWidgets
-from pyqtgraph.dockarea.Dock import Dock
-from pyqtgraph.dockarea.DockArea import DockArea
 import InitialConditions
 import SimulationFunctions
-
+from numba import jit
 import sys
 
 def DataConstructionNonVisual(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
@@ -50,6 +44,8 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
     loc2track = []
     deformations = []
 
+    
+
     def update(noiseOverlay, structure1overlay):
         global counter, NewLineSum, NewLineSum2, end
         stime = time.time()
@@ -77,6 +73,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
             #    structure2overlay = SimulationFunctions.flow(np.asarray(structure2overlay), rows, False, 2)
             #    z = noiseOverlay + structure1overlay + structure2overlay
             #else:
+            
             noiseOverlay = SimulationFunctions.flow(noiseOverlay, rows, True, 1)
             structure1overlay = SimulationFunctions.flow(np.asarray(structure1overlay), rows, False, 1)
             z = noiseOverlay + structure1overlay

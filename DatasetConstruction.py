@@ -12,7 +12,6 @@ from pyqtgraph.dockarea.Dock import Dock
 from pyqtgraph.dockarea.DockArea import DockArea
 import InitialConditions
 import SimulationFunctions
-
 import sys
 
 def DataConstruction(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):

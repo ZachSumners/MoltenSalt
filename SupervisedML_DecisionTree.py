@@ -8,13 +8,13 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
 
 #Load Cross correlation dataset
-CCdata = pd.read_csv('MoltenSaltDataframeEven.csv')
+CCdata = pd.read_csv('MoltenSaltDataframe.csv')
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)
 CCdata = CCdata.transpose()
 CCdata = CCdata.to_numpy()
 
 #Load correct labels
-CClabels = pd.read_csv('MoltenSaltParametersEven.csv').iloc[[6]]
+CClabels = pd.read_csv('MoltenSaltParameters.csv').iloc[[6]]
 CClabels = CClabels.drop(['Unnamed: 0'], axis=1)
 CClabels += CCdata.shape[1]/2
 CClabels = CClabels.astype(int)

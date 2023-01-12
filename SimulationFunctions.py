@@ -1,6 +1,7 @@
 import InitialConditions
 import math
 import numpy as np
+from numba import jit
 
 def deformation_calc(structure):
     lowest = min(structure)
@@ -64,9 +65,12 @@ def deformation_value(means, deformations, location1, location2):
 
     return (def2 - def1)
 
+
+@jit(nopython=True)
 def flow(z, rows, noise, multiplier):
     for i in range(len(z)):
-        shift = multiplier*math.floor(InitialConditions.VelocityFunction(i, rows))
+        #shift = multiplier*math.floor(InitialConditions.VelocityFunction(i, rows))
+        shift = multiplier*math.floor(-(i-500/2)**2/5000 + 12.5)
         if shift == 0:
             shift = 1
         for j in range(shift):
