@@ -37,7 +37,7 @@ cols = 2000
 visual = False
 
 j = 0
-loops = 500
+loops = 20
 for i in range(loops):
     if i != 0:
         concatdf = pd.read_csv("MoltenSaltDataframe.csv", index_col = [0])
@@ -48,13 +48,11 @@ for i in range(loops):
     dfparameters = pd.DataFrame()
     dfdata = pd.DataFrame()
 
-    if i%50 == 0:
-        j += 1
 
     radius = InitialConditions.InitialRadius(0)
-    locations = InitialConditions.InitialLocations(0, 0)
-    location1 = radius + 50#locations[0]
-    location2 = location1 + 25*j#locations[1]
+    locations = InitialConditions.InitialLocations(0, 0, radius)
+    location1 = locations[0]
+    location2 = locations[1]
     
     starting_coords = InitialConditions.InitialCoords(radius)
     starting_x = starting_coords[0]

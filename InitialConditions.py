@@ -3,17 +3,21 @@
 import numpy as np
 import math
 
-def InitialLocations(location1, location2):
-    if location1 == 0:
+def InitialLocations(location1, location2, radius):
+    if location1 == 0 and location2 != 0:
         location1 = math.floor(np.random.randint(200, 800))
         if location1 <= 0:
             location1 = 1
-    if location2 == 0:
+    elif location2 == 0 and location1 != 0:
         location2 = math.floor(np.random.randint(410, 1400))
         if location2 <= location1:
             location2 = location1 + 10
         if location2 >= 2000:
             location2 = 1999
+    elif location1 == 0 and location2 == 0:
+        distance = np.random.randint(50, 1500)
+        location1 = np.random.randint(radius+10, 1950 - distance)
+        location2 = location1 + distance
     return [location1, location2]
 
 def InitialRadius(radius):
