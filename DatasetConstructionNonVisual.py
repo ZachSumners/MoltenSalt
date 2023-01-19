@@ -1,33 +1,24 @@
-from turtle import st
 import numpy as np
 import scipy.signal
-import math
 import time
-import InitialConditions
 import SimulationFunctions
 from numba import jit
-import sys
 
 def DataConstructionNonVisual(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
-    global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, p1, counter, z, app
+    global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, counter
 
     #Initialize the random pipe cross section (grid) and the single eddy at the beginning.
     x = np.linspace(0, rows, rows+1)
     y = np.linspace(0, cols, cols+1)
     noiseOverlay = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
-    #z = np.random.random((rows+1, cols+1)) #Between 0 and 1
     
     structure_func = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
     structure1overlay = structure_func[0]
-    
-
-    structure2overlayInitial = np.zeros((rows+1,cols+1))
 
     #Controls how long the simulation runs (in frames)
     counter = 0
 
     #Plotting initializations
-    CorrelationList = []
     SumPlot_y = []
     SumPlot_y2 = []
     end = False
@@ -39,9 +30,6 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
 
     #Group velocity lists
     means = []
-    means2 = []
-    loc1track = []
-    loc2track = []
     deformations = []
 
     
@@ -61,21 +49,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
             return
         
         #If the simulation has not finished, calculate new line integrals (ultrasonic measurement) for each measurement location and move the grid to simulate flow.
-        if counter < length_time:
-
-            #if counter == 50:
-            #    structure_func2 = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
-            #    structure2overlay = structure_func2[0]
-            #    global structure2
-            #    structure2 = structure_func2[1]
-            
-            #if counter >= 50:
-            #    noiseOverlay = SimulationFunctions.flow(noiseOverlay, rows, True, 1)
-            #    structure1overlay = SimulationFunctions.flow(np.asarray(structure1overlay), rows, False, 1)
-            #    structure2overlay = SimulationFunctions.flow(np.asarray(structure2overlay), rows, False, 2)
-            #    z = noiseOverlay + structure1overlay + structure2overlay
-            #else:
-            
+        if counter < length_time:           
             #Move the seperate parts of the grid based on velocity profile
             noiseOverlay = SimulationFunctions.flow(noiseOverlay, rows, True, 1)
             structure1overlay = SimulationFunctions.flow(np.asarray(structure1overlay), rows, False, 1)
@@ -88,8 +62,6 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
             NewLineSum = np.append(LineSum, np.array([ColumnValue]))
             NewLineSum2 = np.append(LineSum2, np.array([ColumnValue2]))
 
-            #Functions between the two lines were used for earlier error analysis comparing calculated group velocity and measured velocity. Not required for simulation function and can be commented.
-            #------------------------------------------------------------------------------------------------------------------------------------------#
             #Track how the overall structure envelope is moving for group velocity calculation.
             structurecoords = [coords[1] for coords in np.argwhere(structure1overlay > 0)]
             totalcount = sum(structurecoords)
@@ -100,15 +72,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
                 structure1GroupVel = totalcount/numStructureRows
                 means.append(structure1GroupVel)
                 deformations.append(SimulationFunctions.deformation_calc(structurecoords))
-            #loc1track.append(structure1GroupVel[1])
-            #loc2track.append(structure1GroupVel[2])
-            #------------------------------------------------------------------------------------------------------------------------------------------#
 
-            #if counter > 50:
-            #    structure2GroupVel = SimulationFunctions.group_velocity_calc(structure2, location1, location2, rows, means, loc1track, loc2track)
-            #    means2.append(structure2GroupVel[0])
-                #loc1track.append(structure1GroupVel[1])
-                #loc2track.append(structure1GroupVel[2])
             return [noiseOverlay, structure1overlay, []]
 
         #When the simulation run is over and the two ultrasonic signals have been gathered, correlate them.
@@ -127,15 +91,6 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
     #Calculate group velocity and overall deformation of the turbulent structure.
     deformation = SimulationFunctions.deformation_value(means, deformations, location1, location2)
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
-    #groupvel2 = SimulationFunctions.group_velocity_value(means2, location1, location2, rows, starting_x)
-
-    #print(groupvel1)#, groupvel2)
-
-    #loc1track = np.asarray(loc1track)
-    #loc2track = np.asarray(loc2track)
-    #maxloc1 = np.argmax(loc1track)
-    #maxloc2 = np.argmax(loc2track)
-    #print(maxloc2 - maxloc1)
 
     return [crosscorrelationData, groupvel1, deformation]
     
