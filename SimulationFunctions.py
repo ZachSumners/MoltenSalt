@@ -1,14 +1,17 @@
+#Critical repeated functions for simulation.
 import InitialConditions
 import math
 import numpy as np
 from numba import jit
 
+#Calculates how much deformation occured between two locations.
 def deformation_calc(structure):
     lowest = min(structure)
     highest = max(structure) 
 
     return (highest - lowest)
 
+#Simulation initialization. Generate continuous turbulent structure. Eddy shape currently limited to a circle (technically a hyperbola if you count the value of the grid point).
 def spawn_structure(starting_x, starting_y, rows, cols, radius, x, y):
         #Track which pixels are apart of the eddy
         structure = []
@@ -27,23 +30,27 @@ def spawn_structure(starting_x, starting_y, rows, cols, radius, x, y):
         
         return (eddy, structure)
 
+#Function to find the nearest discrete step to the transducer location (for target values greater than input)
 def find_nearest_above(array, target):
     array = np.asarray(array)
     distance_from_target = array - target
     return np.where(distance_from_target > 0, distance_from_target, np.inf).argmin()
-    
+
+#Function to find the nearest discrete step to the transducer location (for target values less than input)   
 def find_nearest_below(array, target):
     array = np.asarray(array)
     distance_from_target = array - target
     return np.where(distance_from_target < 0, distance_from_target, -np.inf).argmax()
 
+#Calculates time for structure to cross between transducers.
 def time_cross(closest, location, rows, starting_x):
     difference = location - closest
     
-    speed = math.floor(InitialConditions.VelocityFunction(starting_x, rows))
+    speed = math.floor(VelocityFunction(starting_x, rows))
     crossed = difference/speed
     return crossed
 
+#Calculates the group velocity of the turbulent structure taking into account the discrete steps of the turbulent structure on the grid
 def group_velocity_value(means, location1, location2, rows, starting_x):
     middleloc1 = find_nearest_above(means, location1)
     middleloc2 = find_nearest_below(means, location2)
@@ -56,6 +63,7 @@ def group_velocity_value(means, location1, location2, rows, starting_x):
 
     return (loc1cross + fullsteps + loc2cross)
 
+#Calculates how much deformation has occured between the transducers taking into account the discrete steps of the turbulent structure on the grid.
 def deformation_value(means, deformations, location1, location2):
     index1 = find_nearest_above(means, location1)
     index2 = find_nearest_below(means, location2)
@@ -65,12 +73,17 @@ def deformation_value(means, deformations, location1, location2):
 
     return (def2 - def1)
 
+#SIMULATION VELOCITY FUNCTION.
+@jit(nopython=True)
+def VelocityFunction(i, size):
+    return -(i-size/2)**2/5000 + 12.5
 
+#Probably the most important function. Moves all grid points according to velocity function for each frame. GPU accelerated.
 @jit(nopython=True)
 def flow(z, rows, noise, multiplier):
     for i in range(len(z)):
-        #shift = multiplier*math.floor(InitialConditions.VelocityFunction(i, rows))
-        shift = multiplier*math.floor(-(i-500/2)**2/5000 + 12.5)
+        shift = multiplier*math.floor(VelocityFunction(i, rows))
+        #shift = multiplier*math.floor(-(i-500/2)**2/5000 + 12.5)
         if shift == 0:
             shift = 1
         for j in range(shift):

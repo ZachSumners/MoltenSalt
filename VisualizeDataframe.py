@@ -10,8 +10,8 @@ dfparams = pd.read_csv('MoltenSaltParameters.csv')
 numplots = len(df.columns) - 2
 averagecount = 0
 avgcount = 0
-fig, axes = plt.subplots(nrows=10, ncols=10)
-for i in range(numplots):
+fig, axes = plt.subplots(nrows=5, ncols=5)
+for i in range(1650, 1675, 1):
     correcttime = round(dfparams['Cross Correlation Sim ' + str(i+1)][6], 2)
     normalized = df['Cross Correlation Sim ' + str(i+1)]/df['Cross Correlation Sim ' + str(i+1)].abs().max()
 
