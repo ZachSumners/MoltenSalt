@@ -45,11 +45,11 @@ cols = 2000
 visual = False
 
 #How many simulation iterations to run
-loops = 3
+loops = 1000
 
 #Length of existing dataframe to know what simulation number to start at.
-namedf = 'MoltenSaltDataframe.csv'
-nameparams = 'MoltenSaltParameters.csv'
+namedf = 'MoltenSaltDataframeMSSolution.csv'
+nameparams = 'MoltenSaltParametersMSSolution.csv'
 try:     
     concatdf = pd.read_csv(namedf, index_col = [0])
     concatparameters = pd.read_csv(nameparams, index_col = [0])
@@ -61,12 +61,12 @@ except:
 for i in range(lengthdataframe, lengthdataframe+loops, 1):
     #If there are existing dataframes, append new simulation runs to them. If not, create new ones.
     try:     
-        concatdf = pd.read_csv("MoltenSaltDataframe.csv", index_col = [0])
-        concatparameters = pd.read_csv("MoltenSaltParameters.csv", index_col = [0])
+        concatdf = pd.read_csv(namedf, index_col = [0])
+        concatparameters = pd.read_csv(nameparams, index_col = [0])
     except:
         if i != 0:
-            concatdf = pd.read_csv("MoltenSaltDataframe.csv", index_col = [0])
-            concatparameters = pd.read_csv("MoltenSaltParameters.csv", index_col = [0])
+            concatdf = pd.read_csv(namedf, index_col = [0])
+            concatparameters = pd.read_csv(nameparams, index_col = [0])
 
     #Simulation number tracker
     print('SIMULATION ', str(i+1))
@@ -77,7 +77,7 @@ for i in range(lengthdataframe, lengthdataframe+loops, 1):
 
     #Generate the initial conditions of the simulation.
     #**Set the function parameter to 0 if you want it to be random. Set to any int if you want to specify it.**
-    radius = InitialConditions.InitialRadius(0)
+    radius = InitialConditions.InitialRadius(50)
     locations = InitialConditions.InitialLocations(0, 0, radius)
     location1 = locations[0]
     location2 = locations[1]
@@ -116,6 +116,6 @@ for i in range(lengthdataframe, lengthdataframe+loops, 1):
     concatparameters[name] = dfparameters[name]
 
     #Save new appended dataframe.
-    concatdf.to_csv("MoltenSaltDataframe.csv")
-    concatparameters.to_csv("MoltenSaltParameters.csv")
+    concatdf.to_csv(namedf)
+    concatparameters.to_csv(nameparams)
 

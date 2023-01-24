@@ -4,13 +4,13 @@ import numpy as np
 import math
 import scipy.signal
 
-idx = 1829
+idx = 10
 
-df = pd.read_csv('MoltenSaltDataframe.csv')
-dfparams = pd.read_csv('MoltenSaltParameters.csv')
+df = pd.read_csv('MoltenSaltDataframeMSSolution.csv')
+dfparams = pd.read_csv('MoltenSaltParametersMSSolution.csv')
 
 correcttime = round(dfparams['Cross Correlation Sim ' + str(idx)][6], 2)
-normalized = df['Cross Correlation Sim ' + str(idx)]/df['Cross Correlation Sim ' + str(idx)].abs().max()
+normalized = df['Cross Correlation Sim ' + str(idx)]#/df['Cross Correlation Sim ' + str(idx)].abs().max()
 ax = normalized.plot()
 lags = scipy.signal.correlation_lags((len(normalized)+1)/2, (len(normalized)+1)/2, mode='full')
 lag = lags[np.argmax(normalized)]

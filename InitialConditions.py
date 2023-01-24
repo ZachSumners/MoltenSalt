@@ -27,7 +27,7 @@ def InitialLocations(location1, location2, radius):
 #Randomly generates radius of turbulent structure
 def InitialRadius(radius):
     if radius == 0:
-        radius = np.random.randint(5, 200)
+        radius = np.random.randint(5, 150)
     return radius
 
 #Randomly generates initial center coordinates of the turbulent structure.

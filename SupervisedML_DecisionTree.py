@@ -2,19 +2,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn import datasets, svm, metrics
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, StratifiedKFold
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
 
 #Load Cross correlation dataset
-CCdata = pd.read_csv('MoltenSaltDataframe.csv')
+CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv')
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)
 CCdata = CCdata.transpose()
 CCdata = CCdata.to_numpy()
 
 #Load correct labels
-CClabels = pd.read_csv('MoltenSaltParameters.csv').iloc[[6]]
+CClabels = pd.read_csv('MoltenSaltParametersMSSolution.csv').iloc[[6]]
 CClabels = CClabels.drop(['Unnamed: 0'], axis=1)
 CClabels += CCdata.shape[1]/2
 CClabels = CClabels.astype(int)
@@ -24,8 +24,8 @@ CClabels = CClabels.to_numpy()[0]
 dtc = DecisionTreeClassifier()
 parameters = {
     'criterion': ['entropy', 'gini', 'log_loss'], 
-    'splitter': ['best', 'random']
-    #'max_depth':# np.linspace(1, 1000, 1000, dtype=int)
+    'splitter': ['best', 'random'],
+    'max_depth': np.linspace(1, 1000, 1000, dtype=int)
     }
 clf = GridSearchCV(dtc, parameters)
 
@@ -48,33 +48,47 @@ CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
 #Split data into testing and training.
-X_train, X_test, y_train, y_test = train_test_split(CCdata, binned_CClabels, test_size=0.2, shuffle=True)
+#X_train, X_test, y_train, y_test = train_test_split(CCdata, binned_CClabels, test_size=0.1, shuffle=True, stratify=binned_CClabels)
+skf = StratifiedKFold(n_splits=5)
+skf.get_n_splits(CCdata, binned_CClabels)
 
-counts, bins = np.histogram(y_train, bins=np.arange(195, 326, 5))
-plt.bar(bins[:-1], counts, width = 4)
-countsTest, binsTest = np.histogram(y_test, bins=np.arange(195, 326, 5))
-plt.bar(binsTest[:-1], countsTest, width = 4)
-plt.show()
+cv = []
 
-pca.fit(X_train)
-X_test = pca.transform(X_test)
-X_train = pca.transform(X_train)
-#y_train = pca.transform(y_train)
+for i, (train_index, test_index) in enumerate(skf.split(CCdata, binned_CClabels)):
+    print(test_index)
+    X_train, X_test, y_train, y_test = CCdata[train_index], CCdata[test_index], binned_CClabels[train_index], binned_CClabels[test_index]
 
-# Learn the digits on the train subset
-clf.fit(X_train, y_train)
+    #counts, bins = np.histogram(y_train, bins=np.arange(195, 326, 5))
+    #plt.bar(bins[:-1], counts, width = 4)
+    #countsTest, binsTest = np.histogram(y_test, bins=np.arange(195, 326, 5))
+    #plt.bar(binsTest[:-1], countsTest, width = 4)
+    #plt.show()
+
+    pca.fit(X_train)
+    X_test = pca.transform(X_test)
+    X_train = pca.transform(X_train)
+    #y_train = pca.transform(y_train)
+
+    # Learn the digits on the train subset
+    clf.fit(X_train, y_train)
 
 
-# Predict the value of the digit on the test subset
-predicted = clf.predict(X_test)
+    # Predict the value of the digit on the test subset
+    predicted = clf.predict(X_test)
 
-print(
-    f"Classification report for classifier {clf}:\n"
-    f"{metrics.classification_report(y_test, predicted)}\n"
-)
+    print(
+        f"Classification report for classifier {clf}:\n"
+        f"{metrics.classification_report(y_test, predicted)}\n"
+    )
 
-disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted, cmap=plt.cm.Blues)
-disp.figure_.suptitle("Confusion Matrix")
-print(f"Confusion matrix:\n{disp.confusion_matrix}")
+    cv.append(metrics.accuracy_score(y_test, predicted))
 
+    #disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted, cmap=plt.cm.Blues)
+    #disp.figure_.suptitle("Confusion Matrix")
+    #print(f"Confusion matrix:\n{disp.confusion_matrix}")
+
+    #plt.show()
+
+plt.bar([1, 2, 3, 4, 5], cv)
+print(cv)
 plt.show()

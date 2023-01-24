@@ -76,7 +76,7 @@ def deformation_value(means, deformations, location1, location2):
 #SIMULATION VELOCITY FUNCTION.
 @jit(nopython=True)
 def VelocityFunction(i, size):
-    return -(i-size/2)**2/5000 + 12.5
+    return 2*10*(1-((i-size/2)/(size/2))**2)
 
 #Probably the most important function. Moves all grid points according to velocity function for each frame. GPU accelerated.
 @jit(nopython=True)
@@ -84,7 +84,7 @@ def flow(z, rows, noise, multiplier):
     for i in range(len(z)):
         shift = multiplier*math.floor(VelocityFunction(i, rows))
         #shift = multiplier*math.floor(-(i-500/2)**2/5000 + 12.5)
-        if shift == 0:
+        if shift == 0 and i != 0 and i != 499:
             shift = 1
         for j in range(shift):
             if noise == True:
