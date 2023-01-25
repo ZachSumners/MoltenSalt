@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_sc
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
+from sklearn.svm import SVC
 
 #Load Cross correlation dataset
 CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv')
@@ -21,11 +22,12 @@ CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
 #Classifier type
-dtc = DecisionTreeClassifier()
+dtc = SVC()
 parameters = {
-    'criterion': ['entropy', 'gini', 'log_loss'], 
-    'splitter': ['best', 'random'],
-    'max_depth': np.linspace(1, 1000, 1000, dtype=int)
+    'C': np.linspace(0.01, 5, 10),
+    'kernel': ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed'],
+    #'degree': np.linspace(1, 5, 5, dtype=int),
+    'gamma': ['scale', 'auto']
     }
 clf = GridSearchCV(dtc, parameters)
 
@@ -55,6 +57,7 @@ skf.get_n_splits(CCdata, binned_CClabels)
 cv = []
 
 for i, (train_index, test_index) in enumerate(skf.split(CCdata, binned_CClabels)):
+    print(test_index)
     X_train, X_test, y_train, y_test = CCdata[train_index], CCdata[test_index], binned_CClabels[train_index], binned_CClabels[test_index]
 
     #counts, bins = np.histogram(y_train, bins=np.arange(195, 326, 5))
