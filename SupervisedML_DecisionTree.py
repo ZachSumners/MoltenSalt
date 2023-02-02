@@ -25,7 +25,7 @@ dtc = DecisionTreeClassifier()
 parameters = {
     'criterion': ['entropy', 'gini', 'log_loss'], 
     'splitter': ['best', 'random'],
-    'max_depth': np.linspace(1, 1000, 1000, dtype=int)
+    'max_depth': np.linspace(1, 1000, 10, dtype=int)
     }
 clf = GridSearchCV(dtc, parameters)
 
