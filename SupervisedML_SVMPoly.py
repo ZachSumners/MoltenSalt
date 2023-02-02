@@ -22,10 +22,11 @@ CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
 #Classifier type
-dtc = SVC(kernel='linear')
+dtc = SVC(kernel='poly')
 parameters = {
     'C': np.linspace(0.01, 5, 10),
-    #'gamma': ['scale', 'auto']
+    'degree': np.linspace(1, 5, 5, dtype=int),
+    'gamma': ['scale', 'auto']
     }
 clf = GridSearchCV(dtc, parameters)
 

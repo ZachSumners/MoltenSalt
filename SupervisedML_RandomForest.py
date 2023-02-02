@@ -3,10 +3,9 @@ import numpy as np
 import pandas as pd
 from sklearn import datasets, svm, metrics
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, StratifiedKFold
-from sklearn import tree
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 
 #Load Cross correlation dataset
 CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv')
@@ -22,10 +21,9 @@ CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
 #Classifier type
-dtc = SVC(kernel='linear')
+dtc = RandomForestClassifier()
 parameters = {
-    'C': np.linspace(0.01, 5, 10),
-    #'gamma': ['scale', 'auto']
+    'criterion': ['gini', 'entropy', 'log_loss'],
     }
 clf = GridSearchCV(dtc, parameters)
 
