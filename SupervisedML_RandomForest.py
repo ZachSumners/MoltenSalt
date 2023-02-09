@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn import datasets, svm, metrics
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, StratifiedKFold
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_validate, cross_val_score, StratifiedKFold
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
@@ -23,12 +23,11 @@ CClabels = CClabels.to_numpy()[0]
 #Classifier type
 dtc = RandomForestClassifier()
 parameters = {
+    'n_estimators': np.arange(10, 1000, 10),
     'criterion': ['gini', 'entropy', 'log_loss'],
+    'max_features': ['sqrt', 'log2']
     }
-clf = GridSearchCV(dtc, parameters)
 
-#Principal Component Analysis - Reduce dimensionality before fitting.
-pca = PCA(n_components=3)
 
 binned_CClabels = []
 for i in range(len(CClabels)):
@@ -45,48 +44,22 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
-#Split data into testing and training.
-#X_train, X_test, y_train, y_test = train_test_split(CCdata, binned_CClabels, test_size=0.1, shuffle=True, stratify=binned_CClabels)
-skf = StratifiedKFold(n_splits=5)
-skf.get_n_splits(CCdata, binned_CClabels)
+pca = PCA(n_components=3)
+CCdata = pca.fit_transform(CCdata)
 
-cv = []
+clf = GridSearchCV(dtc, parameters)
+clf.fit(CCdata, binned_CClabels)
+print(clf.best_score_)
 
-for i, (train_index, test_index) in enumerate(skf.split(CCdata, binned_CClabels)):
-    print(test_index)
-    X_train, X_test, y_train, y_test = CCdata[train_index], CCdata[test_index], binned_CClabels[train_index], binned_CClabels[test_index]
-
-    #counts, bins = np.histogram(y_train, bins=np.arange(195, 326, 5))
-    #plt.bar(bins[:-1], counts, width = 4)
-    #countsTest, binsTest = np.histogram(y_test, bins=np.arange(195, 326, 5))
-    #plt.bar(binsTest[:-1], countsTest, width = 4)
-    #plt.show()
-
-    pca.fit(X_train)
-    X_test = pca.transform(X_test)
-    X_train = pca.transform(X_train)
-    #y_train = pca.transform(y_train)
-
-    # Learn the digits on the train subset
-    clf.fit(X_train, y_train)
-
-
-    # Predict the value of the digit on the test subset
-    predicted = clf.predict(X_test)
-
-    print(
-        f"Classification report for classifier {clf}:\n"
-        f"{metrics.classification_report(y_test, predicted)}\n"
-    )
-
-    cv.append(metrics.accuracy_score(y_test, predicted))
-
-    #disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted, cmap=plt.cm.Blues)
-    #disp.figure_.suptitle("Confusion Matrix")
-    #print(f"Confusion matrix:\n{disp.confusion_matrix}")
-
-    #plt.show()
-
-plt.bar([1, 2, 3, 4, 5], cv)
-print(cv)
-plt.show()
+#plt.figure(figsize=(12,6))
+#labels = ["1st Fold", "2nd Fold", "3rd Fold", "4th Fold", "5th Fold"]
+#X_axis = np.arange(len(labels))
+#ax = plt.gca()
+#plt.ylim(0.40000, 1)
+#plt.bar(X_axis-0.2, results['train_accuracy'], 0.4, color='blue', label='Training')
+#plt.bar(X_axis+0.2, results['test_accuracy'], 0.4, color='red', label='Validation')
+#plt.title('Cross Validation', fontsize=30)
+#plt.xticks(X_axis, labels)
+#plt.legend()
+#plt.grid(True)
+#plt.show()
