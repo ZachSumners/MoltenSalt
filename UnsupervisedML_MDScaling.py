@@ -38,7 +38,7 @@ binned_CClabels = np.delete(binned_CClabels, badruns)
 badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
-
+print(CCdata.shape)
 def add_2d_scatter(ax, points, points_color, title=None):
     x, y = points.T
     ax.scatter(x, y, c=points_color, s=50, alpha=0.8)

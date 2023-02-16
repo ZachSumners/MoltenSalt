@@ -20,18 +20,6 @@ CClabels += CCdata.shape[1]/2
 CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
-#Classifier type
-dtc = DecisionTreeClassifier()
-parameters = {
-    'criterion': ['entropy', 'gini', 'log_loss'], 
-    'splitter': ['best', 'random'],
-    'max_depth': np.linspace(1, 1000, 10, dtype=int)
-    }
-clf = GridSearchCV(dtc, parameters)
-
-#Principal Component Analysis - Reduce dimensionality before fitting.
-pca = PCA(n_components=3)
-
 binned_CClabels = []
 for i in range(len(CClabels)):
     binned_CClabels.append(CClabels[i] - CClabels[i]%10)
@@ -47,47 +35,24 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
-#Split data into testing and training.
-#X_train, X_test, y_train, y_test = train_test_split(CCdata, binned_CClabels, test_size=0.1, shuffle=True, stratify=binned_CClabels)
-skf = StratifiedKFold(n_splits=5)
-skf.get_n_splits(CCdata, binned_CClabels)
+#Principal Component Analysis - Reduce dimensionality before fitting.
+pca = PCA(n_components=3)
+CCdata = pca.fit_transform(CCdata)
 
-cv = []
+#Classifier type
+dtc = DecisionTreeClassifier(splitter='best')
+parameters = {
+    'max_depth': np.linspace(1, 50, 50, dtype=int),
+    'min_samples_split': np.linspace(1, 40, 40, dtype=int),
+    'min_samples_leaf': np.linspace(1, 20, 20, dtype=int)
+    }
 
-for i, (train_index, test_index) in enumerate(skf.split(CCdata, binned_CClabels)):
-    X_train, X_test, y_train, y_test = CCdata[train_index], CCdata[test_index], binned_CClabels[train_index], binned_CClabels[test_index]
-
-    #counts, bins = np.histogram(y_train, bins=np.arange(195, 326, 5))
-    #plt.bar(bins[:-1], counts, width = 4)
-    #countsTest, binsTest = np.histogram(y_test, bins=np.arange(195, 326, 5))
-    #plt.bar(binsTest[:-1], countsTest, width = 4)
-    #plt.show()
-
-    pca.fit(X_train)
-    X_test = pca.transform(X_test)
-    X_train = pca.transform(X_train)
-    #y_train = pca.transform(y_train)
-
-    # Learn the digits on the train subset
-    clf.fit(X_train, y_train)
+clf = GridSearchCV(dtc, parameters, return_train_score=True)
+print('...Running')
+clf.fit(CCdata, binned_CClabels)
 
 
-    # Predict the value of the digit on the test subset
-    predicted = clf.predict(X_test)
-
-    print(
-        f"Classification report for classifier {clf}:\n"
-        f"{metrics.classification_report(y_test, predicted)}\n"
-    )
-
-    cv.append(metrics.accuracy_score(y_test, predicted))
-
-    #disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted, cmap=plt.cm.Blues)
-    #disp.figure_.suptitle("Confusion Matrix")
-    #print(f"Confusion matrix:\n{disp.confusion_matrix}")
-
-    #plt.show()
-
-plt.bar([1, 2, 3, 4, 5], cv)
-print(cv)
-plt.show()
+results = pd.DataFrame(clf.cv_results_)
+#print(clf.cv_results_)
+results.to_csv('DecisionTreeFittingResults.csv')
+print('Complete')

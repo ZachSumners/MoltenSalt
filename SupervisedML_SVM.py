@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn import datasets, svm, metrics
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_validate, StratifiedKFold
+from sklearn.model_selection import RandomizedSearchCV, train_test_split, GridSearchCV, cross_validate, StratifiedKFold
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
@@ -22,12 +22,12 @@ CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
 #Classifier type
-clf = SVC(kernel='linear')
-#parameters = {
-    #'C': np.linspace(0.01, 5, 10),
-    #'gamma': ['scale', 'auto']
-    #}
-#clf = GridSearchCV(dtc, parameters)
+dtc = SVC()
+parameters = {
+    'C': np.linspace(0.01, 2, 100),
+    'gamma': ['scale', 'auto'],
+    'kernel': ['rbf', 'sigmoid']
+    }
 
 
 
@@ -46,10 +46,13 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
-#Principal Component Analysis - Reduce dimensionality before fitting.
 pca = PCA(n_components=3)
 CCdata = pca.fit_transform(CCdata)
-print('here')
-results = cross_validate(clf, CCdata, binned_CClabels, scoring=['accuracy'], cv=3)
-print('here2')
-print(results)
+
+clf = GridSearchCV(dtc, parameters, return_train_score=True)
+print('...Running')
+clf.fit(CCdata, binned_CClabels)
+
+results = pd.DataFrame(clf.cv_results_)
+results.to_csv('SVMFittingResults.csv')
+print('Complete')
