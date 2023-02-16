@@ -25,9 +25,9 @@ CClabels = CClabels.to_numpy()[0]
 #Classifier type
 dtc = KNeighborsClassifier()
 parameters = {
-    'n_neighbors': np.linspace(1, 20, 20, dtype=int),
+    'n_neighbors': np.linspace(100, 500, 40, dtype=int),
     'algorithm': ['ball_tree', 'kd_tree', 'brute'],
-    'weights': ['uniform', 'distance']
+    'weights': ['uniform']
     }
 
 #Principal Component Analysis - Reduce dimensionality before fitting.
@@ -46,7 +46,7 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
-clf = RandomizedSearchCV(dtc, parameters, n_iter = 10, return_train_score=True)
+clf = GridSearchCV(dtc, parameters, return_train_score=True)
 print('...Running')
 clf.fit(CCdata, binned_CClabels)
 
