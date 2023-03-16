@@ -17,7 +17,7 @@ CCdata = CCdata.to_numpy()
 #Load correct labels
 CClabels = pd.read_csv('MoltenSaltParametersMSSolution.csv').iloc[[6]]
 CClabels = CClabels.drop(['Unnamed: 0'], axis=1)
-CClabels += CCdata.shape[1]/2
+CClabels += 198
 CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
@@ -27,10 +27,11 @@ CCdata, CClabels = shuffle(CCdata, CClabels, random_state = 45)
 dtc = RandomForestClassifier()
 parameters = {
     'bootstrap': [True, False],
-    'max_depth': np.linspace(5, 50, 45, dtype=int),
+    'criterion': ['gini', 'entropy', 'log_loss'],
+    'max_depth': np.linspace(5, 30, 25, dtype=int),
     'min_samples_split': np.linspace(10, 50, 40, dtype=int),
-    'min_samples_leaf': np.linspace(10, 40, 30, dtype=int),
-    'n_estimators': np.linspace(100, 2500, 250, dtype=int)
+    'min_samples_leaf': np.linspace(10, 50, 40, dtype=int),
+    'n_estimators': np.linspace(10, 2500, 250, dtype=int)
     }
 
 
@@ -50,7 +51,7 @@ binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 #pca = PCA(n_components=3)
 #CCdata = pca.fit_transform(CCdata)
 
-clf = RandomizedSearchCV(dtc, parameters, n_iter=50, return_train_score=True)
+clf = RandomizedSearchCV(dtc, parameters, n_iter=100, return_train_score=True)
 print('...Running')
 clf.fit(CCdata, binned_CClabels)
 

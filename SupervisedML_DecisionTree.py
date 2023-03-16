@@ -52,18 +52,20 @@ binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 #CCdata = pca.fit_transform(CCdata)
 
 #Classifier type
-#dtc = DecisionTreeClassifier(splitter='best')
-#parameters = {
-#    'max_depth': np.linspace(1, 12, 12, dtype=int),
-#    'min_samples_split': np.linspace(10, 30, 20, dtype=int),
-#    'min_samples_leaf': np.linspace(50, 70, 20, dtype=int)
-#    }
+dtc = DecisionTreeClassifier()
+parameters = {
+    'splitter': ['random', 'best'],
+    'criterion': ['gini', 'entropy', 'log_loss'],
+    'max_depth': np.linspace(5, 30, 25, dtype=int),
+    'min_samples_split': np.linspace(10, 50, 40, dtype=int),
+    'min_samples_leaf': np.linspace(10, 50, 40, dtype=int)
+    }
 
-#clf = GridSearchCV(dtc, parameters, return_train_score=True)
-#clf = RandomizedSearchCV(dtc, parameters, n_iter=10, return_train_score=True)
-#clf.fit(CCdata, binned_CClabels)
+clf = GridSearchCV(dtc, parameters, return_train_score=True)
+clf = RandomizedSearchCV(dtc, parameters, n_iter=300, return_train_score=True)
+clf.fit(CCdata, binned_CClabels)
 
 results = pd.DataFrame(clf.cv_results_)
-print(results['mean_test_score'], results['mean_train_score'])
+#print(results['mean_test_score'], results['mean_train_score'])
 results.to_csv('DecisionTreeFittingResults.csv')
 print('Complete')
