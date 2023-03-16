@@ -6,9 +6,10 @@ from sklearn.model_selection import RandomizedSearchCV, train_test_split, GridSe
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.utils import shuffle
 
 #Load Cross correlation dataset
-CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv')
+CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv')[200:310]
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)
 CCdata = CCdata.transpose()
 CCdata = CCdata.to_numpy()
@@ -20,14 +21,16 @@ CClabels += CCdata.shape[1]/2
 CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
+CCdata, CClabels = shuffle(CCdata, CClabels, random_state = 45)
+
 #Classifier type
 dtc = RandomForestClassifier()
 parameters = {
-    'max_depth': np.linspace(3, 15, 13, dtype=int),
     'bootstrap': [True, False],
-    'min_samples_leaf': np.linspace(2, 20, 10, dtype=int),
-    'min_samples_split': np.linspace(2, 50, 48, dtype=int),
-    'n_estimators': np.linspace(100, 2000, 190, dtype=int)
+    'max_depth': np.linspace(5, 50, 45, dtype=int),
+    'min_samples_split': np.linspace(10, 50, 40, dtype=int),
+    'min_samples_leaf': np.linspace(10, 40, 30, dtype=int),
+    'n_estimators': np.linspace(100, 2500, 250, dtype=int)
     }
 
 
@@ -44,10 +47,10 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
-pca = PCA(n_components=3)
-CCdata = pca.fit_transform(CCdata)
+#pca = PCA(n_components=3)
+#CCdata = pca.fit_transform(CCdata)
 
-clf = RandomizedSearchCV(dtc, parameters, n_iter=100, return_train_score=True)
+clf = RandomizedSearchCV(dtc, parameters, n_iter=50, return_train_score=True)
 print('...Running')
 clf.fit(CCdata, binned_CClabels)
 

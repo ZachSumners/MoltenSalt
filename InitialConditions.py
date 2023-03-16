@@ -12,14 +12,14 @@ def InitialLocations(location1, location2, radius):
             location1 = 1
     #If transducer location 2 specified
     elif location2 == 0 and location1 != 0:
-        location2 = np.random.randint(410, 1400)
+        location2 = np.random.randint(1000, 1800)
         if location2 <= location1:
             location2 = location1 + 10
         if location2 >= 2000:
             location2 = 1999
     #If neither specified
     elif location1 == 0 and location2 == 0:
-        distance = np.random.randint(10, 1000)
+        distance = np.random.randint(1100, 1400)
         location1 = np.random.randint(radius+10, 1950 - distance)
         location2 = location1 + distance
     return [location1, location2]
@@ -32,7 +32,7 @@ def InitialRadius(radius):
 
 #Randomly generates initial center coordinates of the turbulent structure.
 def InitialCoords(radius):
-    x = math.floor(np.random.randint(radius+2, 498-radius))
+    x = math.floor(np.random.randint(100, 200-radius))
     y = radius + 1
     if radius >= x:
         x = radius + 1

@@ -8,9 +8,10 @@ from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.utils import shuffle
 
 #Load Cross correlation dataset
-CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv')
+CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv').iloc[200:310]
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)
 CCdata = CCdata.transpose()
 CCdata = CCdata.to_numpy()
@@ -18,9 +19,11 @@ CCdata = CCdata.to_numpy()
 #Load correct labels
 CClabels = pd.read_csv('MoltenSaltParametersMSSolution.csv').iloc[[6]]
 CClabels = CClabels.drop(['Unnamed: 0'], axis=1)
-CClabels += CCdata.shape[1]/2
+CClabels += 198
 CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
+
+CCdata, CClabels = shuffle(CCdata, CClabels, random_state = 21)
 
 #Classifier type
 dtc = KNeighborsClassifier()
@@ -35,7 +38,7 @@ pca = PCA(n_components=3)
 
 binned_CClabels = []
 for i in range(len(CClabels)):
-    binned_CClabels.append(CClabels[i] - CClabels[i]%10)
+    binned_CClabels.append(round(CClabels[i]/10)*10)
 binned_CClabels = np.asarray(binned_CClabels)
 
 badruns = np.where(binned_CClabels > 300)
@@ -46,7 +49,8 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
-clf = GridSearchCV(dtc, parameters, return_train_score=True)
+#clf = GridSearchCV(dtc, parameters, return_train_score=True)
+clf = RandomizedSearchCV(dtc, parameters, n_iter=50, return_train_score=True)
 print('...Running')
 clf.fit(CCdata, binned_CClabels)
 

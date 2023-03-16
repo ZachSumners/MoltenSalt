@@ -7,9 +7,10 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
+from sklearn.utils import shuffle
 
 #Load Cross correlation dataset
-CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv')
+CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv').iloc[200:310]
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)
 CCdata = CCdata.transpose()
 CCdata = CCdata.to_numpy()
@@ -17,9 +18,11 @@ CCdata = CCdata.to_numpy()
 #Load correct labels
 CClabels = pd.read_csv('MoltenSaltParametersMSSolution.csv').iloc[[6]]
 CClabels = CClabels.drop(['Unnamed: 0'], axis=1)
-CClabels += CCdata.shape[1]/2
+CClabels += 198
 CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
+
+CCdata, CClabels = shuffle(CCdata, CClabels, random_state = 21)
 
 #Classifier type
 dtc = SVC()
@@ -47,7 +50,7 @@ CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
 pca = PCA(n_components=3)
-CCdata = pca.fit_transform(CCdata)
+#CCdata = pca.fit_transform(CCdata)
 
 clf = GridSearchCV(dtc, parameters, return_train_score=True)
 print('...Running')

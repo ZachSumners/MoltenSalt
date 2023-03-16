@@ -45,7 +45,7 @@ cols = 2000
 visual = False
 
 #How many simulation iterations to run
-loops = 1000
+loops = 250
 
 #Length of existing dataframe to know what simulation number to start at.
 namedf = 'MoltenSaltDataframeMSSolution.csv'
