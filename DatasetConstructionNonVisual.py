@@ -3,6 +3,7 @@ import scipy.signal
 import time
 import SimulationFunctions
 from numba import jit
+import matplotlib.pyplot as plt
 
 def DataConstructionNonVisual(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, counter
@@ -76,7 +77,22 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
             return [noiseOverlay, structure1overlay, []]
 
         #When the simulation run is over and the two ultrasonic signals have been gathered, correlate them.
-        else:   
+        else: 
+            
+            plt.plot(np.arange(0, len(NewLineSum2), 1), NewLineSum2)
+            plt.xlabel('Time')
+            plt.ylabel('Strength')
+            plt.title('Ultrasonic Measurement - Location 2')
+            plt.grid()
+            plt.show()
+
+            plt.plot(np.arange(0, len(NewLineSum), 1), NewLineSum)
+            plt.xlabel('Time')
+            plt.ylabel('Strength')
+            plt.title('Ultrasonic Measurement - Location 1')
+            plt.grid()
+            plt.show()
+
             CorrelationList = scipy.signal.correlate(NewLineSum2, NewLineSum, mode='full')
             crosscorrelationData.append(CorrelationList)
             return [noiseOverlay, structure1overlay, crosscorrelationData]

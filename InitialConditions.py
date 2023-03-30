@@ -32,7 +32,7 @@ def InitialRadius(radius):
 
 #Randomly generates initial center coordinates of the turbulent structure.
 def InitialCoords(radius):
-    x = math.floor(np.random.randint(100, 200-radius))
+    x = math.floor(np.random.randint(radius + 10, 450-radius))
     y = radius + 1
     if radius >= x:
         x = radius + 1

@@ -45,7 +45,7 @@ cols = 2000
 visual = False
 
 #How many simulation iterations to run
-loops = 250
+loops = 1
 
 #Length of existing dataframe to know what simulation number to start at.
 namedf = 'MoltenSaltDataframeMSSolution.csv'
@@ -77,8 +77,8 @@ for i in range(lengthdataframe, lengthdataframe+loops, 1):
 
     #Generate the initial conditions of the simulation.
     #**Set the function parameter to 0 if you want it to be random. Set to any int if you want to specify it.**
-    radius = InitialConditions.InitialRadius(50)
-    locations = InitialConditions.InitialLocations(0, 0, radius)
+    radius = InitialConditions.InitialRadius(100)
+    locations = InitialConditions.InitialLocations(500, 1000, radius)
     location1 = locations[0]
     location2 = locations[1]
     

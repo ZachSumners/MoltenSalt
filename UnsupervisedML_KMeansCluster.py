@@ -145,7 +145,7 @@ plt.scatter(
     zorder=10,
 )
 plt.title(
-    "K-means clustering on the digits dataset (PCA-reduced data)\n"
+    "Ultrasonic Cross Correlation K-Means Clustering\n"
     "Centroids are marked with white cross"
 )
 plt.xlim(x_min, x_max)

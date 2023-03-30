@@ -8,6 +8,7 @@ from pyqtgraph.Qt import QtWidgets
 from pyqtgraph.dockarea.Dock import Dock
 from pyqtgraph.dockarea.DockArea import DockArea
 import SimulationFunctions
+import matplotlib.pyplot as plt
 
 def DataConstruction(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, p1, counter, z, app
@@ -141,6 +142,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
 
         else:   
             #Perform the cross correlation and end the simulation. 
+            
             CorrelationList = scipy.signal.correlate(NewLineSum2, NewLineSum, mode='full')
             crosscorrelationPlot.setData(CorrelationList/max(CorrelationList))
             crosscorrelationData.append(CorrelationList)
