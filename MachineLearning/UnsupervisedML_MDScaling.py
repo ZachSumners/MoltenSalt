@@ -24,12 +24,11 @@ CClabels += CCdata.shape[1]/2
 CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
+#Data preprocessing. Only use labels between 200 and 300 for noise reasons.
 binned_CClabels = []
 for i in range(len(CClabels)):
     binned_CClabels.append(int(CClabels[i] - CClabels[i]%10))
 binned_CClabels = np.asarray(binned_CClabels)
-
-#print(binned_CClabels)
 
 badruns = np.where(binned_CClabels > 300)
 CCdata = np.delete(CCdata, badruns, 0)
@@ -38,7 +37,8 @@ binned_CClabels = np.delete(binned_CClabels, badruns)
 badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
-print(CCdata.shape)
+
+
 def add_2d_scatter(ax, points, points_color, title=None):
     x, y = points.T
     ax.scatter(x, y, c=points_color, s=50, alpha=0.8)
@@ -46,6 +46,7 @@ def add_2d_scatter(ax, points, points_color, title=None):
     ax.xaxis.set_major_formatter(ticker.NullFormatter())
     ax.yaxis.set_major_formatter(ticker.NullFormatter())
 
+#Plot the datapoints in a higher dimensional space. Unsupervised learning.
 def plot_3d(points, points_color, title):
     x, y, z = points.T
     cm = ListedColormap(["#045993", "#db6000", '#118011', '#b40c0d', '#75499c', '#6d392e', '#c059a1', '#606060', '#9b9c07', '#009dad'])
@@ -74,6 +75,7 @@ def plot_2d(points, points_color, title):
     add_2d_scatter(ax, points, points_color)
     plt.show()
 
+#The unsupervised algorithm.
 md_scaling = manifold.MDS(
     n_components=3,
     max_iter=50,

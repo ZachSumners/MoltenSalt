@@ -1,3 +1,5 @@
+#LEGACY. Testing how PyQtGraph works.
+
 """
 This example demonstrates the use of GLSurfacePlotItem.
 """

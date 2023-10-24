@@ -4,6 +4,8 @@ import numpy as np
 import math
 import scipy.signal
 
+#Investigation of the group velocity discrepancy.
+
 df = pd.read_csv('MoltenSaltDataframe.csv')
 dfparams = pd.read_csv('MoltenSaltParameters.csv')
 

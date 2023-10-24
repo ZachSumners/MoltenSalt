@@ -1,11 +1,6 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import datasets, svm, metrics
-from sklearn.model_selection import RandomizedSearchCV, train_test_split, GridSearchCV, cross_val_score, StratifiedKFold
-from sklearn import tree
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.decomposition import PCA
+from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from sklearn.utils import shuffle
 
@@ -24,7 +19,7 @@ CClabels = CClabels.to_numpy()[0]
 
 CCdata, CClabels = shuffle(CCdata, CClabels, random_state = 45)
 
-#Classifier type
+#Classifier type. Define hyperparameter bounds.
 dtc = SVC(kernel='poly')
 parameters = {
     'C': np.linspace(0.1, 2, 100),
@@ -32,10 +27,7 @@ parameters = {
     #'gamma': np.logspace(-9, 3, 13)
     }
 
-#Principal Component Analysis - Reduce dimensionality before fitting.
-#pca = PCA(n_components=3)
-#CCdata = pca.fit_transform(CCdata)
-
+#Data preprocessing. Only use labels between 200 and 300 for noise reasons.
 binned_CClabels = []
 for i in range(len(CClabels)):
     binned_CClabels.append(CClabels[i] - CClabels[i]%10)
@@ -49,11 +41,13 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
+#Hyperparameter search and cross validation.
 clf = GridSearchCV(dtc, parameters, return_train_score=True)
 #clf = RandomizedSearchCV(dtc, parameters, n_iter = 100, return_train_score=True)
 print('...Running')
 clf.fit(CCdata, binned_CClabels)
 
+#Output results.
 results = pd.DataFrame(clf.cv_results_)
 results.to_csv('SVMPolyFittingResults.csv')
 print('Complete')

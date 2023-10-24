@@ -1,3 +1,5 @@
+#LEGACY. Rest of the simulation was based on this.
+
 import numpy as np
 import math
 import random

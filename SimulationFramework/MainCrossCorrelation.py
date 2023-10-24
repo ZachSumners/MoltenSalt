@@ -1,3 +1,5 @@
+#LEGACY. Rest of the simulation was built on this.
+
 """
 This example demonstrates the use of GLSurfacePlotItem.
 """

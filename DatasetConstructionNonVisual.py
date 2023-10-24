@@ -5,6 +5,8 @@ import SimulationFunctions
 from numba import jit
 import matplotlib.pyplot as plt
 
+#Constructs the molten salt datasets but without plotting.
+
 def DataConstructionNonVisual(location1, location2, radius, starting_x, starting_y, length_time, rows, cols):
     global SumPlot_y, SumPlot_y2, end, NewLineSum, NewLineSum2, counter
 

@@ -1,4 +1,4 @@
-#MANUAL DEFINITIONS
+#MANUAL DEFINITION OF INITIAL CONDITIONS.
 #Set to 0 if you do NOT want to manually set them.
 import numpy as np
 import math

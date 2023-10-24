@@ -21,12 +21,11 @@ CClabels += CCdata.shape[1]/2
 CClabels = CClabels.astype(int)
 CClabels = CClabels.to_numpy()[0]
 
+#Data preprocessing. Only use labels between 200 and 300 for noise reasons.
 binned_CClabels = []
 for i in range(len(CClabels)):
     binned_CClabels.append(CClabels[i] - CClabels[i]%10)
 binned_CClabels = np.asarray(binned_CClabels)
-
-print(binned_CClabels)
 
 badruns = np.where(binned_CClabels > 300)
 CCdata = np.delete(CCdata, badruns, 0)

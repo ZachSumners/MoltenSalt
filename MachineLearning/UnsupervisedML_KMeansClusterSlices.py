@@ -3,10 +3,6 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from time import time
-from sklearn import metrics
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
 
 CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv').loc[200:299]
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)

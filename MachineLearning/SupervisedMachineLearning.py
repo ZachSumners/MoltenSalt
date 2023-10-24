@@ -5,6 +5,8 @@ from sklearn import datasets, svm, metrics
 from sklearn.model_selection import train_test_split
 from sklearn import tree
 
+#Test ML code as the general layout of supervised algorithms.
+
 #Load Cross correlation dataset
 CCdata = pd.read_csv('MoltenSaltDataframe.csv')
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)

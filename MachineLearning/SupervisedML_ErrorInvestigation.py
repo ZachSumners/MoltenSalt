@@ -1,12 +1,9 @@
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
 import numpy as np
 import pandas as pd
 from sklearn import metrics
-from sklearn.model_selection import RandomizedSearchCV, train_test_split, GridSearchCV, cross_val_score, StratifiedKFold
+from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
-from sklearn.svm import SVC
-from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.neighbors import KNeighborsClassifier
 
 #Load Cross correlation dataset
@@ -30,6 +27,7 @@ clf = KNeighborsClassifier(n_neighbors=275, algorithm='ball_tree', weights='unif
 #Principal Component Analysis - Reduce dimensionality before fitting.
 pca = PCA(n_components=3)
 
+#Data preprocessing. Only use labels between 200 and 300 for noise reasons.
 binned_CClabels = []
 for i in range(len(CClabels)):
     binned_CClabels.append(round(CClabels[i]/10)*10)
@@ -44,18 +42,7 @@ CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 originalCCdata = CCdata
 
-#counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-#deletinglist = []
-#for i in range(len(binned_CClabels)):
-#    current = counts[int((binned_CClabels[i]-200)/10)]
-#    if current < 200:
-#        counts[int((binned_CClabels[i]-200)/10)] += 1
-#    else:
-#        deletinglist.append(i)
-
-#CCdata = np.delete(CCdata, deletinglist, 0)
-#binned_CClabels = np.delete(binned_CClabels, deletinglist, 0)
-
+#Apply the PCA.
 CCdata = pca.fit_transform(CCdata)
 
 indicies = np.arange(0, len(binned_CClabels), 1)
@@ -67,7 +54,7 @@ clf.fit(X_train, y_train)
 # Predict the value of the digit on the test subset
 predicted = clf.predict(X_test)
 
-
+#Try and see if there are any patterns to where the errors are occuring.
 wrong = np.array([input for idx,input,prediction,label in zip(enumerate(X_test), X_test, predicted, y_test) if prediction != label])
 right = np.array([input for idx,input,prediction,label in zip(enumerate(X_test), X_test, predicted, y_test) if prediction == label])
 

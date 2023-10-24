@@ -1,16 +1,10 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from time import time
-from sklearn import metrics
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn import manifold, datasets
+from sklearn import manifold
 from matplotlib import ticker
 from matplotlib.colors import ListedColormap
 
+#The same as the other MDScaling file but only use a subset of data this time to test.
 CCdata = pd.read_csv('MoltenSaltDataframeMSSolution.csv').loc[200:299]
 CCdata = CCdata.drop(['Unnamed: 0', 'Time Elapsed'], axis=1)
 CCdata = CCdata.transpose()
@@ -25,6 +19,7 @@ def add_2d_scatter(ax, points, points_color, title=None):
     ax.xaxis.set_major_formatter(ticker.NullFormatter())
     ax.yaxis.set_major_formatter(ticker.NullFormatter())
 
+#Plot the data in a higher dimensional space.
 def plot_3d(points, title):
     x, y, z = points.T
     cm = ListedColormap(["#045993", "#db6000", '#118011', '#b40c0d', '#75499c', '#6d392e', '#c059a1', '#606060', '#9b9c07', '#009dad'])
@@ -50,6 +45,7 @@ def plot_2d(points, points_color, title):
     add_2d_scatter(ax, points, points_color)
     plt.show()
 
+#The unsupervised algorithm.
 md_scaling = manifold.MDS(
     n_components=2,
     max_iter=50,

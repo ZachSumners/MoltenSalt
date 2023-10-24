@@ -1,12 +1,8 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn import datasets, svm, metrics
-from sklearn.model_selection import RandomizedSearchCV, train_test_split, GridSearchCV, cross_validate, StratifiedKFold
-from sklearn import tree
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.decomposition import PCA
-from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.utils import shuffle
 
 #Load Cross correlation dataset
@@ -25,21 +21,21 @@ CClabels = CClabels.to_numpy()[0]
 CCdata, CClabels = shuffle(CCdata, CClabels, random_state = 21)
 
 #Classifier type
-dtc = SVC()
+dtc = KNeighborsClassifier()
 parameters = {
-    'C': np.linspace(0.01, 2, 100),
-    'gamma': ['scale', 'auto'],
-    'kernel': ['rbf', 'sigmoid']
+    'n_neighbors': np.linspace(100, 500, 40, dtype=int),
+    'algorithm': ['ball_tree', 'kd_tree', 'brute'],
+    'weights': ['uniform']
     }
 
+#Principal Component Analysis - Reduce dimensionality before fitting.
+pca = PCA(n_components=3)
 
-
+#Data preprocessing. Only use labels between 200 and 300 for noise reasons.
 binned_CClabels = []
 for i in range(len(CClabels)):
-    binned_CClabels.append(CClabels[i] - CClabels[i]%10)
+    binned_CClabels.append(round(CClabels[i]/10)*10)
 binned_CClabels = np.asarray(binned_CClabels)
-
-print(binned_CClabels)
 
 badruns = np.where(binned_CClabels > 300)
 CCdata = np.delete(CCdata, badruns, 0)
@@ -49,13 +45,13 @@ badrunsLow = np.where(binned_CClabels < 200)
 CCdata = np.delete(CCdata, badrunsLow, 0)
 binned_CClabels = np.delete(binned_CClabels, badrunsLow)
 
-pca = PCA(n_components=3)
-#CCdata = pca.fit_transform(CCdata)
-
-clf = GridSearchCV(dtc, parameters, return_train_score=True)
+#Hyperparameter search and cross validation.
+#clf = GridSearchCV(dtc, parameters, return_train_score=True)
+clf = RandomizedSearchCV(dtc, parameters, n_iter=50, return_train_score=True)
 print('...Running')
 clf.fit(CCdata, binned_CClabels)
 
+#Output results.
 results = pd.DataFrame(clf.cv_results_)
-results.to_csv('SVMFittingResults.csv')
+results.to_csv('KNeighbourFittingResults.csv')
 print('Complete')
