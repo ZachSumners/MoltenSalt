@@ -22,7 +22,7 @@ def InitialLocations(location1, location2, radius):
         distance = np.random.randint(1100, 1400)
         location1 = np.random.randint(radius+10, 1950 - distance)
         location2 = location1 + distance
-    return [location1, location2]
+    return location1, location2
 
 #Randomly generates radius of turbulent structure
 def InitialRadius(radius):
@@ -38,4 +38,4 @@ def InitialCoords(radius):
         x = radius + 1
     if 500 - radius <= x:
         x = 500 - radius - 1
-    return [x, y]
+    return x, y
