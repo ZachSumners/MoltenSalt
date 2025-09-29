@@ -36,16 +36,16 @@ concatdf = pd.DataFrame()
 
 
 #Controls maximum number of frames a simulation can have.
-timelimit = 200
+timelimit = 100
 #Controls size of simulation grid for all iterations.
 rows = 500
 cols = 2000
 
 #Controls whether you want the simulation grid to show up and run with pyqtgraph.
-visual = False
+visual = True
 
 #How many simulation iterations to run
-loops = 1
+loops = 3
 
 #Length of existing dataframe to know what simulation number to start at.
 namedf = 'MoltenSaltDataframeMSSolution.csv'
@@ -78,28 +78,21 @@ for i in range(lengthdataframe, lengthdataframe+loops, 1):
     #Generate the initial conditions of the simulation.
     #**Set the function parameter to 0 if you want it to be random. Set to any int if you want to specify it.**
     radius = InitialConditions.InitialRadius(100)
-    locations = InitialConditions.InitialLocations(500, 1000, radius)
-    location1 = locations[0]
-    location2 = locations[1]
+    location1, location2 = InitialConditions.InitialLocations(500, 1000, radius)
     
-    starting_coords = InitialConditions.InitialCoords(radius)
-    starting_x = starting_coords[0]
-    starting_y = starting_coords[1]
+    starting_x, starting_y = InitialConditions.InitialCoords(radius)
 
     #Run the simulation module, tracking how long it took. GPU acceleration speeds it up by about x3.
 
     if visual == True:
-        results = DatasetConstruction.DataConstruction(location1, location2, radius, starting_x, starting_y, timelimit, rows, cols)
+        results, calculatedtime, deformation = DatasetConstruction.DataConstruction(location1, location2, radius, starting_x, starting_y, timelimit, rows, cols)
     else:
         start = timer()
-        results = DatasetConstructionNonVisual.DataConstructionNonVisual(location1, location2, radius, starting_x, starting_y, timelimit, rows, cols)
+        results, calculatedtime, deformation = DatasetConstructionNonVisual.DataConstructionNonVisual(location1, location2, radius, starting_x, starting_y, timelimit, rows, cols)
         dt = timer() - start
         print("Computed in %f s" % dt)
     
-    #Values returned from simulation stored in variables.
-    calculatedtime = results[1]
-    deformation = results[2]
-    data = results[0][0]
+    data = results[0]
     
     #Create the "Time Elapsed" pandas column.
     if i == 0:
