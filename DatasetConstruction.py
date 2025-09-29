@@ -35,14 +35,12 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     area.addDock(d4, 'bottom', d3)
 
     #Initialize the random pipe cross section (grid) and the single eddy at the beginning.
-    x = np.linspace(0, rows, rows+1)
-    y = np.linspace(0, cols, cols+1)
-    noiseOverlay = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
-    #z = np.random.random((rows+1, cols+1)) #Between 0 and 1
+    x = np.linspace(0, rows, rows)
+    y = np.linspace(0, cols, cols)
+    noiseOverlay = 2*np.random.random((rows,cols)) -1 #Between -1 and 1
+    #z = np.random.random((rows, cols)) #Between 0 and 1
     
-    structure_func = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
-    structure1overlay = structure_func[0]
-    structure = structure_func[1]
+    structure1overlay, structure = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
 
     #Plot the grid with pyqtgraph.
     d1.hideTitleBar()
@@ -106,13 +104,19 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
         ColumnValue = 0
         ColumnValue2 = 0
         LineSum = NewLineSum
-        LineSum2 = NewLineSum2      
+        LineSum2 = NewLineSum2  
+
+        #time.sleep(2)    
 
         if counter < length_time and end == False:
             counter += 1
             #Simulate the grid points flowing as defined by the velocity function.
-            noiseOverlay = SimulationFunctions.flow(noiseOverlay, rows, True, 1)
-            structure1overlay = SimulationFunctions.flow(np.asarray(structure1overlay), rows, False, 1)
+            noiseOverlay_new = SimulationFunctions.flow(noiseOverlay, rows, True, 1)
+            np.copyto(noiseOverlay, noiseOverlay_new) 
+
+            new_structure1overlay = SimulationFunctions.flow(np.asarray(structure1overlay), rows, False, 1)
+            np.copyto(structure1overlay, new_structure1overlay) 
+            #Add the two components
             z = noiseOverlay + structure1overlay
 
             #Store line integral transducer calculations for each frame.
@@ -146,8 +150,12 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
             CorrelationList = scipy.signal.correlate(NewLineSum2, NewLineSum, mode='full')
             crosscorrelationPlot.setData(CorrelationList/max(CorrelationList))
             crosscorrelationData.append(CorrelationList)
-            
+
+            crosscorrelationPlot.setData(CorrelationList)
+            w.update()
+
             end = True
+            time.sleep(3)
             w.close()
             return
     
@@ -163,7 +171,7 @@ def DataConstruction(location1, location2, radius, starting_x, starting_y, lengt
     deformation = SimulationFunctions.deformation_value(means, deformations, location1, location2)
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
 
-    return [crosscorrelationData, groupvel1, deformation]
+    return crosscorrelationData, groupvel1, deformation
     
 
 #Module supports
