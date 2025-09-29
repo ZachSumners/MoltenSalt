@@ -15,8 +15,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
     y = np.linspace(0, cols, cols+1)
     noiseOverlay = 2*np.random.random((rows+1,cols+1)) -1 #Between -1 and 1
     
-    structure_func = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
-    structure1overlay = structure_func[0]
+    structure1overlay, structure = SimulationFunctions.spawn_structure(starting_x, starting_y, rows, cols, radius, x, y)
 
     #Controls how long the simulation runs (in frames)
     counter = 0
@@ -76,7 +75,7 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
                 means.append(structure1GroupVel)
                 deformations.append(SimulationFunctions.deformation_calc(structurecoords))
 
-            return [noiseOverlay, structure1overlay, []]
+            return noiseOverlay, structure1overlay, []
 
         #When the simulation run is over and the two ultrasonic signals have been gathered, correlate them.
         else: 
@@ -97,20 +96,17 @@ def DataConstructionNonVisual(location1, location2, radius, starting_x, starting
 
             CorrelationList = scipy.signal.correlate(NewLineSum2, NewLineSum, mode='full')
             crosscorrelationData.append(CorrelationList)
-            return [noiseOverlay, structure1overlay, crosscorrelationData]
+            return noiseOverlay, structure1overlay, crosscorrelationData
     
     #Run the simulation for length_time frames, updating each grid component each frame.
     for counter in range(length_time):
-        overlays = update(noiseOverlay, structure1overlay)
-        noiseOverlay = overlays[0]
-        structure1overlay = overlays[1]
-        crosscorrelationData = overlays[2]
+        noiseOverlay, structure1overlay, crosscorrelationData = update(noiseOverlay, structure1overlay)
     
     #Calculate group velocity and overall deformation of the turbulent structure.
     deformation = SimulationFunctions.deformation_value(means, deformations, location1, location2)
     groupvel1 = SimulationFunctions.group_velocity_value(means, location1, location2, rows, starting_x)
 
-    return [crosscorrelationData, groupvel1, deformation]
+    return crosscorrelationData, groupvel1, deformation
     
 
 #Module supports
